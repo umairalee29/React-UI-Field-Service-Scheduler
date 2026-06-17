@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import 'dotenv/config';
 import User from '../models/User';
 import Job from '../models/Job';
@@ -47,14 +48,21 @@ async function seed() {
     'Ingrid Dahl', 'Bjørn Eriksen', 'Silje Johnsen', 'Magnus Lund',
   ];
 
+  // Pre-hash passwords — insertMany skips the pre-save bcrypt hook
+  const [adminHash, dispatchHash, techHash] = await Promise.all([
+    bcrypt.hash('admin1234', 10),
+    bcrypt.hash('dispatch1234', 10),
+    bcrypt.hash('tech1234', 10),
+  ]);
+
   const usersData = [
-    { name: 'Admin User', email: 'admin@dispatchiq.com', passwordHash: 'admin1234', role: 'admin', isAvailable: true },
-    { name: 'Sara Dispatch', email: 'dispatch@dispatchiq.com', passwordHash: 'dispatch1234', role: 'dispatcher', isAvailable: true },
-    { name: 'Johan Dispatch', email: 'dispatch2@dispatchiq.com', passwordHash: 'dispatch1234', role: 'dispatcher', isAvailable: true },
+    { name: 'Admin User', email: 'admin@dispatchiq.com', passwordHash: adminHash, role: 'admin', isAvailable: true },
+    { name: 'Sara Dispatch', email: 'dispatch@dispatchiq.com', passwordHash: dispatchHash, role: 'dispatcher', isAvailable: true },
+    { name: 'Johan Dispatch', email: 'dispatch2@dispatchiq.com', passwordHash: dispatchHash, role: 'dispatcher', isAvailable: true },
     ...techNames.map((name, i) => ({
       name,
       email: `tech${i + 1}@dispatchiq.com`,
-      passwordHash: 'tech1234',
+      passwordHash: techHash,
       role: 'technician',
       isAvailable: Math.random() > 0.2,
       skills: techSkills[i] ?? [],
