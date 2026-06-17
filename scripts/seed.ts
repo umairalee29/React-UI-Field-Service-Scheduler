@@ -5,7 +5,7 @@ import Job from '../models/Job';
 import StatusHistory from '../models/StatusHistory';
 import Notification from '../models/Notification';
 import LocationPing from '../models/LocationPing';
-import Counter from '../models/Counter';
+import Counter, { getNextSequence } from '../models/Counter';
 
 // Load env manually since we're running outside Next.js
 const MONGODB_URI = process.env['MONGODB_URI'] ?? 'mongodb://localhost:27017/dispatchiq';
@@ -164,6 +164,13 @@ async function seed() {
       notes: Math.random() > 0.5 ? 'Access via back entrance. Call ahead.' : '',
       completionNotes: status === 'completed' ? 'Job completed successfully. Customer satisfied.' : undefined,
     });
+  }
+
+  // insertMany skips pre-save hooks, so generate jobNumbers manually
+  const year = new Date().getFullYear();
+  for (const jobData of jobsData) {
+    const seq = await getNextSequence(`job-${year}`);
+    (jobData as Record<string, unknown>)['jobNumber'] = `JOB-${year}-${String(seq).padStart(5, '0')}`;
   }
 
   const jobs = await Job.insertMany(jobsData);
