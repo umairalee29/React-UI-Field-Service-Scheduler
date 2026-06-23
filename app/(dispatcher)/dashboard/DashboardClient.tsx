@@ -311,12 +311,17 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {
+          const SHORT_LABELS: Record<string, string> = {
+            unassigned: 'Open', assigned: 'Assigned',
+            in_progress: 'Active', on_hold: 'Hold',
+            completed: 'Done', cancelled: 'Cancelled',
+          };
           const { jobsByStatus } = d.data;
           setStatusData(
             Object.entries(jobsByStatus).map(([name, value]) => ({
-              name: name.replace(/_/g, ' '),
+              name: SHORT_LABELS[name] ?? name,
               value: value as number,
-              color: STATUS_COLORS[name as keyof typeof STATUS_COLORS] ?? '#64748b',
+              color: STATUS_COLORS[name] ?? '#64748b',
             }))
           );
         }
@@ -344,14 +349,14 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         <Card className="lg:col-span-1">
           <CardHeader><CardTitle>Jobs by Status</CardTitle></CardHeader>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={statusData} barCategoryGap="30%" margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <BarChart data={statusData} barCategoryGap="30%" margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
               <CartesianGrid vertical={false} stroke="#1e293b" strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
-                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                tick={{ fill: '#94a3b8', fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v: string) => v.replace(' ', '\n')}
+                interval={0}
               />
               <YAxis
                 tick={{ fill: '#94a3b8', fontSize: 12 }}
