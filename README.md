@@ -2,6 +2,10 @@
 
 A full-stack field service management platform built with Next.js 14, MongoDB, Socket.io, and Leaflet maps. Manage jobs, dispatch technicians, and track field activity in real time — all from a dark, professional UI.
 
+<p align="center">
+  <img src="public/screenshots/dashboard.png" alt="DispatchIQ Dashboard" width="100%" />
+</p>
+
 <br/>
 
 ![Next.js](https://img.shields.io/badge/Next.js_14-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
