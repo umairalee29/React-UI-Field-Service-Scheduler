@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Cell, ResponsiveContainer, Tooltip,
@@ -8,14 +9,140 @@ import {
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { useSocket } from '@/hooks/useSocket';
-import { timeAgo } from '@/lib/formatters';
+import { formatTime, formatDuration, timeAgo } from '@/lib/formatters';
 import type { IUser, IJob } from '@/types';
+import type { TodayJob } from './page';
 
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<string, string> = {
   unassigned: '#64748b', assigned: '#3b82f6',
   in_progress: '#f59e0b', on_hold: '#8b5cf6',
   completed: '#10b981', cancelled: '#ef4444',
 };
+
+const STATUS_LABELS: Record<string, string> = {
+  unassigned: 'Unassigned', assigned: 'Assigned',
+  in_progress: 'In Progress', on_hold: 'On Hold',
+  completed: 'Completed', cancelled: 'Cancelled',
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  low: '#64748b', medium: '#3b82f6', high: '#f59e0b', critical: '#ef4444',
+};
+
+function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
+  const today = new Date();
+  const dateLabel = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  if (jobs.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Today&apos;s Schedule</CardTitle>
+            <p className="text-xs text-text-secondary mt-0.5">{dateLabel}</p>
+          </div>
+          <Link href="/jobs/new" className="text-xs text-accent-blue hover:underline">+ New Job</Link>
+        </CardHeader>
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <svg className="h-10 w-10 text-border-dark mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p className="text-sm text-text-secondary">No jobs scheduled for today</p>
+          <Link href="/jobs/new" className="mt-3 text-xs text-accent-blue hover:underline">Schedule a job</Link>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Today&apos;s Schedule</CardTitle>
+          <p className="text-xs text-text-secondary mt-0.5">{dateLabel}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-text-secondary">{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
+          <Link href="/jobs" className="text-xs text-accent-blue hover:underline">View all →</Link>
+        </div>
+      </CardHeader>
+
+      {/* Column headers */}
+      <div className="hidden md:grid grid-cols-[90px_1fr_1fr_160px_110px] gap-4 px-2 pb-2 border-b border-border-dark">
+        {['Time', 'Job', 'Customer', 'Technician', 'Status'].map((h) => (
+          <span key={h} className="text-xs font-medium text-text-secondary uppercase tracking-wide">{h}</span>
+        ))}
+      </div>
+
+      {/* Rows */}
+      <div className="divide-y divide-border-dark/50">
+        {jobs.map((job) => {
+          const isPast = new Date(job.scheduledAt) < new Date() && job.status !== 'completed';
+          const statusColor = STATUS_COLORS[job.status] ?? '#64748b';
+          const priorityColor = PRIORITY_COLORS[job.priority] ?? '#64748b';
+
+          return (
+            <Link
+              key={job._id}
+              href={`/jobs`}
+              className="grid grid-cols-1 md:grid-cols-[90px_1fr_1fr_160px_110px] gap-2 md:gap-4 px-2 py-3 rounded-lg hover:bg-bg-primary/50 transition-colors group items-center"
+            >
+              {/* Time */}
+              <div className="flex items-center gap-2 md:block">
+                <span className={`text-sm font-mono font-medium ${isPast && job.status !== 'completed' ? 'text-accent-red' : 'text-text-primary'}`}>
+                  {formatTime(job.scheduledAt)}
+                </span>
+                <span className="text-xs text-text-secondary md:block">{formatDuration(job.estimatedDuration)}</span>
+              </div>
+
+              {/* Job */}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+                    style={{ background: priorityColor }}
+                  />
+                  <span className="text-xs font-mono text-text-secondary">{job.jobNumber}</span>
+                </div>
+                <p className="text-sm font-medium text-text-primary truncate mt-0.5">{job.title}</p>
+              </div>
+
+              {/* Customer */}
+              <div className="min-w-0">
+                <p className="text-sm text-text-secondary truncate">{job.customer.name}</p>
+              </div>
+
+              {/* Technician */}
+              <div className="flex items-center gap-2 min-w-0">
+                {job.technician ? (
+                  <>
+                    <Avatar name={job.technician.name} src={job.technician.avatar} size="sm" />
+                    <span className="text-sm text-text-primary truncate">{job.technician.name}</span>
+                  </>
+                ) : (
+                  <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
+                    Unassigned
+                  </span>
+                )}
+              </div>
+
+              {/* Status */}
+              <div>
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
+                  style={{ background: `${statusColor}18`, color: statusColor }}
+                >
+                  <span className="h-1 w-1 rounded-full" style={{ background: statusColor }} />
+                  {STATUS_LABELS[job.status] ?? job.status}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
 
 const KpiIcons = {
   openJobs: (
@@ -101,12 +228,6 @@ function KpiCard({ label, value, color, icon, trend, higherIsBetter }: KpiCardPr
   );
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  unassigned: 'Unassigned', assigned: 'Assigned',
-  in_progress: 'In Progress', on_hold: 'On Hold',
-  completed: 'Completed', cancelled: 'Cancelled',
-};
-
 interface ActivityItem {
   id: string;
   message: string;
@@ -124,9 +245,10 @@ interface Props {
   completedTrend: number;
   criticalTrend: number;
   technicians: IUser[];
+  todaysJobs: TodayJob[];
 }
 
-export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians }: Props) {
+export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians, todaysJobs }: Props) {
   const socket = useSocket();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -211,6 +333,9 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         <KpiCard label="Completed Today" value={completedToday} color="#10b981" icon="completed" trend={completedTrend} higherIsBetter={true} />
         <KpiCard label="Critical Jobs" value={criticalJobs} color="#ef4444" icon="critical" trend={criticalTrend} higherIsBetter={false} />
       </div>
+
+      {/* Today's Schedule */}
+      <TodaySchedule jobs={todaysJobs} />
 
       {/* Chart + sidebar row */}
       <div className="grid lg:grid-cols-3 gap-6">

@@ -7,6 +7,18 @@ import Job from '@/models/Job';
 import User from '@/models/User';
 import type { IUser } from '@/types';
 
+export interface TodayJob {
+  _id: string;
+  jobNumber: string;
+  title: string;
+  status: string;
+  priority: string;
+  scheduledAt: string;
+  estimatedDuration: number;
+  customer: { name: string };
+  technician?: { name: string; avatar?: string } | null;
+}
+
 async function getDashboardData() {
   await connectDB();
 
@@ -22,27 +34,46 @@ async function getDashboardData() {
     inProgressToday,
     completedToday,
     criticalJobs,
-    // Yesterday comparisons
     openJobsYesterday,
     inProgressYesterday,
     completedYesterday,
     criticalJobsYesterday,
     rawTechnicians,
+    rawTodaysJobs,
   ] = await Promise.all([
-    // Today
     Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] } }),
     Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: today, $lt: tomorrow } }),
     Job.countDocuments({ status: 'completed', updatedAt: { $gte: today, $lt: tomorrow } }),
     Job.countDocuments({ priority: 'critical', status: { $nin: ['completed', 'cancelled'] } }),
-    // Yesterday — open jobs approximated as jobs created before today that are still open
     Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] }, createdAt: { $lt: today } }),
     Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: yesterday, $lt: today } }),
     Job.countDocuments({ status: 'completed', updatedAt: { $gte: yesterday, $lt: today } }),
     Job.countDocuments({ priority: 'critical', status: { $nin: ['completed', 'cancelled'] }, createdAt: { $lt: today } }),
     User.find({ role: 'technician', isActive: true }).select('-passwordHash').lean(),
+    Job.find({ scheduledAt: { $gte: today, $lt: tomorrow }, status: { $ne: 'cancelled' } })
+      .populate('technicianId', 'name avatar')
+      .sort({ scheduledAt: 1 })
+      .limit(8)
+      .lean(),
   ]);
 
   const technicians = rawTechnicians as unknown as IUser[];
+
+  // Serialize for the client component
+  const todaysJobs: TodayJob[] = rawTodaysJobs.map((j) => {
+    const tech = j.technicianId as unknown as { name: string; avatar?: string } | null;
+    return {
+      _id: j._id.toString(),
+      jobNumber: j.jobNumber,
+      title: j.title,
+      status: j.status,
+      priority: j.priority,
+      scheduledAt: (j.scheduledAt as Date).toISOString(),
+      estimatedDuration: j.estimatedDuration,
+      customer: { name: j.customer.name },
+      technician: tech ? { name: tech.name, avatar: tech.avatar } : null,
+    };
+  });
 
   return {
     openJobs,
@@ -54,6 +85,7 @@ async function getDashboardData() {
     completedTrend: completedToday - completedYesterday,
     criticalTrend: criticalJobs - criticalJobsYesterday,
     technicians,
+    todaysJobs,
   };
 }
 
