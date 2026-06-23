@@ -46,14 +46,49 @@ const KpiIcons = {
   ),
 };
 
-interface KpiCardProps { label: string; value: number; color: string; icon: keyof typeof KpiIcons }
-function KpiCard({ label, value, color, icon }: KpiCardProps) {
+interface KpiCardProps {
+  label: string;
+  value: number;
+  color: string;
+  icon: keyof typeof KpiIcons;
+  trend: number;
+  higherIsBetter: boolean;
+}
+function KpiCard({ label, value, color, icon, trend, higherIsBetter }: KpiCardProps) {
+  const isPositive = trend > 0;
+  const isNeutral = trend === 0;
+  const isGood = isNeutral ? null : (higherIsBetter ? isPositive : !isPositive);
+  const trendColor = isNeutral ? '#64748b' : isGood ? '#10b981' : '#ef4444';
+  const trendLabel = isNeutral
+    ? 'same as yesterday'
+    : `${isPositive ? '+' : ''}${trend} vs yesterday`;
+
   return (
     <Card>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-text-secondary text-sm">{label}</p>
           <p className="text-3xl font-bold mt-1" style={{ color }}>{value}</p>
+          <div className="flex items-center gap-1 mt-2">
+            {!isNeutral && (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={trendColor}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {isPositive
+                  ? <polyline points="18 15 12 9 6 15" />
+                  : <polyline points="6 9 12 15 18 9" />}
+              </svg>
+            )}
+            <span className="text-xs" style={{ color: trendColor }}>{trendLabel}</span>
+          </div>
         </div>
         <div
           className="p-3 rounded-xl flex items-center justify-center"
@@ -78,10 +113,14 @@ interface Props {
   inProgressToday: number;
   completedToday: number;
   criticalJobs: number;
+  openJobsTrend: number;
+  inProgressTrend: number;
+  completedTrend: number;
+  criticalTrend: number;
   technicians: IUser[];
 }
 
-export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, technicians }: Props) {
+export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians }: Props) {
   const socket = useSocket();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -141,10 +180,10 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
     <div className="space-y-6">
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Open Jobs" value={openJobs} color="#3b82f6" icon="openJobs" />
-        <KpiCard label="In Progress Today" value={inProgressToday} color="#f59e0b" icon="inProgress" />
-        <KpiCard label="Completed Today" value={completedToday} color="#10b981" icon="completed" />
-        <KpiCard label="Critical Jobs" value={criticalJobs} color="#ef4444" icon="critical" />
+        <KpiCard label="Open Jobs" value={openJobs} color="#3b82f6" icon="openJobs" trend={openJobsTrend} higherIsBetter={false} />
+        <KpiCard label="In Progress Today" value={inProgressToday} color="#f59e0b" icon="inProgress" trend={inProgressTrend} higherIsBetter={true} />
+        <KpiCard label="Completed Today" value={completedToday} color="#10b981" icon="completed" trend={completedTrend} higherIsBetter={true} />
+        <KpiCard label="Critical Jobs" value={criticalJobs} color="#ef4444" icon="critical" trend={criticalTrend} higherIsBetter={false} />
       </div>
 
       {/* Charts + Technicians row */}

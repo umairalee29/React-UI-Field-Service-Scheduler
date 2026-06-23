@@ -14,20 +14,47 @@ async function getDashboardData() {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-  const [openJobs, inProgressToday, completedToday, criticalJobs, rawTechnicians] =
-    await Promise.all([
-      Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] } }),
-      Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: today, $lt: tomorrow } }),
-      Job.countDocuments({ status: 'completed', updatedAt: { $gte: today, $lt: tomorrow } }),
-      Job.countDocuments({ priority: 'critical', status: { $nin: ['completed', 'cancelled'] } }),
-      User.find({ role: 'technician', isActive: true }).select('-passwordHash').lean(),
-    ]);
+  const [
+    openJobs,
+    inProgressToday,
+    completedToday,
+    criticalJobs,
+    // Yesterday comparisons
+    openJobsYesterday,
+    inProgressYesterday,
+    completedYesterday,
+    criticalJobsYesterday,
+    rawTechnicians,
+  ] = await Promise.all([
+    // Today
+    Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] } }),
+    Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: today, $lt: tomorrow } }),
+    Job.countDocuments({ status: 'completed', updatedAt: { $gte: today, $lt: tomorrow } }),
+    Job.countDocuments({ priority: 'critical', status: { $nin: ['completed', 'cancelled'] } }),
+    // Yesterday — open jobs approximated as jobs created before today that are still open
+    Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] }, createdAt: { $lt: today } }),
+    Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: yesterday, $lt: today } }),
+    Job.countDocuments({ status: 'completed', updatedAt: { $gte: yesterday, $lt: today } }),
+    Job.countDocuments({ priority: 'critical', status: { $nin: ['completed', 'cancelled'] }, createdAt: { $lt: today } }),
+    User.find({ role: 'technician', isActive: true }).select('-passwordHash').lean(),
+  ]);
 
-  // _id is serialized to string via JSON when passed to client component
   const technicians = rawTechnicians as unknown as IUser[];
 
-  return { openJobs, inProgressToday, completedToday, criticalJobs, technicians };
+  return {
+    openJobs,
+    inProgressToday,
+    completedToday,
+    criticalJobs,
+    openJobsTrend: openJobs - openJobsYesterday,
+    inProgressTrend: inProgressToday - inProgressYesterday,
+    completedTrend: completedToday - completedYesterday,
+    criticalTrend: criticalJobs - criticalJobsYesterday,
+    technicians,
+  };
 }
 
 export default async function DashboardPage() {
