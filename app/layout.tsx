@@ -6,7 +6,6 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'DispatchIQ — Field Service Scheduler',
   description: 'Real-time field service scheduling and dispatch management',
-  icons: { icon: '/favicon.ico' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
