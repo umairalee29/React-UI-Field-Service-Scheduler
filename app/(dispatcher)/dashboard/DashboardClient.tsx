@@ -101,11 +101,17 @@ function KpiCard({ label, value, color, icon, trend, higherIsBetter }: KpiCardPr
   );
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  unassigned: 'Unassigned', assigned: 'Assigned',
+  in_progress: 'In Progress', on_hold: 'On Hold',
+  completed: 'Completed', cancelled: 'Cancelled',
+};
+
 interface ActivityItem {
   id: string;
   message: string;
-  job?: IJob;
   at: Date;
+  isLive?: boolean;
 }
 
 interface Props {
@@ -125,6 +131,26 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
 
+  // Pre-populate from DB on mount
+  useEffect(() => {
+    fetch('/api/analytics/activity')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const historical: ActivityItem[] = d.data.map((entry: any) => ({
+            id: entry._id,
+            message: `${entry.jobId?.jobNumber ?? '—'} → ${STATUS_LABELS[entry.status] ?? entry.status}`,
+            at: new Date(entry.changedAt),
+            isLive: false,
+          }));
+          setActivity(historical);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // Real-time socket events prepended on top
   useEffect(() => {
     socket.emit('join:dispatcher');
 
@@ -132,9 +158,9 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
       setActivity((prev) => [
         {
           id: `${job._id}-${Date.now()}`,
-          message: `${job.jobNumber} → ${job.status.replace(/_/g, ' ')}`,
-          job,
+          message: `${job.jobNumber} → ${STATUS_LABELS[job.status] ?? job.status}`,
           at: new Date(),
+          isLive: true,
         },
         ...prev.slice(0, 19),
       ]);
@@ -145,8 +171,8 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         {
           id: `${job._id}-new-${Date.now()}`,
           message: `New job created: ${job.jobNumber}`,
-          job,
           at: new Date(),
+          isLive: true,
         },
         ...prev.slice(0, 19),
       ]);
@@ -243,18 +269,27 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
 
         {/* Activity */}
         <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Live Activity</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Live Activity</CardTitle>
+            <span className="flex items-center gap-1.5 text-xs text-accent-emerald">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-emerald animate-pulse" />
+              Live
+            </span>
+          </CardHeader>
           <div className="space-y-3 max-h-56 overflow-y-auto">
-            {activity.length === 0 ? (
-              <p className="text-sm text-text-secondary text-center py-4">Waiting for activity…</p>
-            ) : (
-              activity.map((item) => (
-                <div key={item.id} className="flex gap-2 text-sm">
-                  <span className="text-text-secondary flex-shrink-0 text-xs">{timeAgo(item.at)}</span>
-                  <span className="text-text-primary truncate">{item.message}</span>
+            {activity.map((item) => (
+              <div key={item.id} className="flex items-start gap-2">
+                <div className="flex-shrink-0 mt-1">
+                  {item.isLive
+                    ? <span className="h-1.5 w-1.5 rounded-full bg-accent-blue block" />
+                    : <span className="h-1.5 w-1.5 rounded-full bg-border-dark block" />}
                 </div>
-              ))
-            )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-text-primary truncate">{item.message}</p>
+                  <p className="text-xs text-text-secondary">{timeAgo(item.at)}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
