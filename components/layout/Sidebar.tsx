@@ -69,7 +69,7 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen bg-bg-secondary border-r border-border-dark fixed left-0 top-0 z-30">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-border-dark">
+      <div className="px-6 h-16 flex items-center border-b border-border-dark">
         <Link href={user.role === 'technician' ? '/my-jobs' : '/dashboard'} className="flex items-center gap-2">
           <span className="text-accent-blue text-xl">⚡</span>
           <span className="text-lg font-bold text-text-primary font-heading">DispatchIQ</span>

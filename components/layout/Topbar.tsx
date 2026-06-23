@@ -31,7 +31,7 @@ export function Topbar({ user }: TopbarProps) {
   const title = getTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-20 bg-bg-secondary/80 backdrop-blur border-b border-border-dark px-6 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-20 bg-bg-secondary/80 backdrop-blur border-b border-border-dark px-6 h-16 flex items-center justify-between">
       <h1 className="text-lg font-semibold text-text-primary font-heading">{title}</h1>
       <div className="flex items-center gap-3">
         <NotificationBell />
