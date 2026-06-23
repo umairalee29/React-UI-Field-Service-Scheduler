@@ -186,67 +186,79 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         <KpiCard label="Critical Jobs" value={criticalJobs} color="#ef4444" icon="critical" trend={criticalTrend} higherIsBetter={false} />
       </div>
 
-      {/* Charts + Technicians row */}
+      {/* Chart + sidebar row */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Donut */}
-        <Card className="lg:col-span-1">
+
+        {/* Donut — primary widget, spans 2 of 3 columns */}
+        <Card className="lg:col-span-2">
           <CardHeader><CardTitle>Jobs by Status</CardTitle></CardHeader>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={2} dataKey="value">
-                {statusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-              <Tooltip
-                contentStyle={{ background: '#1a2235', border: '1px solid #1e293b', borderRadius: 8 }}
-                labelStyle={{ color: '#f1f5f9' }}
-                itemStyle={{ color: '#94a3b8' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="grid grid-cols-2 gap-1 mt-2">
-            {statusData.map((d) => (
-              <div key={d.name} className="flex items-center gap-1.5">
-                <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                <span className="text-xs text-text-secondary capitalize truncate">{d.name}</span>
-                <span className="text-xs text-text-primary ml-auto">{d.value}</span>
-              </div>
-            ))}
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-full sm:w-auto flex-shrink-0">
+              <ResponsiveContainer width={220} height={220}>
+                <PieChart>
+                  <Pie data={statusData} cx="50%" cy="50%" innerRadius={65} outerRadius={95} paddingAngle={3} dataKey="value">
+                    {statusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: '#1a2235', border: '1px solid #1e293b', borderRadius: 8 }}
+                    labelStyle={{ color: '#f1f5f9' }}
+                    itemStyle={{ color: '#94a3b8' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-3 w-full">
+              {statusData.map((d) => (
+                <div key={d.name} className="flex items-center gap-2.5">
+                  <div className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-text-secondary capitalize truncate">{d.name}</p>
+                    <p className="text-sm font-semibold text-text-primary">{d.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
 
-        {/* Technicians */}
-        <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Technicians</CardTitle></CardHeader>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {technicians.map((tech) => (
-              <div key={tech._id} className="flex items-center gap-3">
-                <Avatar name={tech.name} src={tech.avatar} size="md" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{tech.name}</p>
-                  <p className="text-xs text-text-secondary truncate">{(tech.skills ?? []).slice(0, 2).join(', ')}</p>
-                </div>
-                <div className={`h-2 w-2 rounded-full ${tech.isAvailable ? 'bg-accent-emerald' : 'bg-accent-amber'}`} />
-              </div>
-            ))}
-          </div>
-        </Card>
+        {/* Right column — technicians + activity stacked */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
 
-        {/* Activity */}
-        <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Live Activity</CardTitle></CardHeader>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {activity.length === 0 ? (
-              <p className="text-sm text-text-secondary text-center py-4">Waiting for activity…</p>
-            ) : (
-              activity.map((item) => (
-                <div key={item.id} className="flex gap-2 text-sm">
-                  <span className="text-text-secondary flex-shrink-0">{timeAgo(item.at)}</span>
-                  <span className="text-text-primary truncate">{item.message}</span>
+          {/* Technicians */}
+          <Card className="flex-1">
+            <CardHeader><CardTitle>Technicians</CardTitle></CardHeader>
+            <div className="space-y-3 max-h-48 overflow-y-auto">
+              {technicians.map((tech) => (
+                <div key={tech._id} className="flex items-center gap-3">
+                  <Avatar name={tech.name} src={tech.avatar} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-text-primary truncate">{tech.name}</p>
+                    <p className="text-xs text-text-secondary truncate">{(tech.skills ?? []).slice(0, 2).join(', ')}</p>
+                  </div>
+                  <div className={`h-2 w-2 rounded-full flex-shrink-0 ${tech.isAvailable ? 'bg-accent-emerald' : 'bg-accent-amber'}`} />
                 </div>
-              ))
-            )}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
+
+          {/* Activity */}
+          <Card className="flex-1">
+            <CardHeader><CardTitle>Live Activity</CardTitle></CardHeader>
+            <div className="space-y-3 max-h-48 overflow-y-auto">
+              {activity.length === 0 ? (
+                <p className="text-sm text-text-secondary text-center py-4">Waiting for activity…</p>
+              ) : (
+                activity.map((item) => (
+                  <div key={item.id} className="flex gap-2 text-sm">
+                    <span className="text-text-secondary flex-shrink-0 text-xs">{timeAgo(item.at)}</span>
+                    <span className="text-text-primary truncate">{item.message}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+
+        </div>
       </div>
     </div>
   );
