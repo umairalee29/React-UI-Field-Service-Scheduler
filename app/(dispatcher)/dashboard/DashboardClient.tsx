@@ -342,8 +342,13 @@ function KpiCard({ label, value, color, icon, trend, higherIsBetter }: KpiCardPr
     : `${isPositive ? '+' : ''}${trend} vs yesterday`;
 
   return (
-    <Card>
-      <div className="flex items-center justify-between">
+    <div className="relative bg-bg-card border border-border-dark rounded-xl p-4 overflow-hidden">
+      {/* Left accent strip */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+        style={{ background: color }}
+      />
+      <div className="flex items-center justify-between pl-3">
         <div>
           <p className="text-text-secondary text-sm">{label}</p>
           <p className="text-3xl font-bold mt-1" style={{ color }}>{value}</p>
@@ -375,7 +380,7 @@ function KpiCard({ label, value, color, icon, trend, higherIsBetter }: KpiCardPr
           {KpiIcons[icon]}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
