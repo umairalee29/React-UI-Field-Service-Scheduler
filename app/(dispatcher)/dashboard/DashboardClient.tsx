@@ -228,24 +228,13 @@ function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
   );
 }
 
-function GreetingHeader({
-  userName,
-  openJobs,
-  inProgressToday,
-  completedToday,
-  criticalJobs,
-}: {
-  userName: string;
-  openJobs: number;
-  inProgressToday: number;
-  completedToday: number;
-  criticalJobs: number;
-}) {
-  const hour = new Date().getHours();
+function GreetingHeader({ userName }: { userName: string }) {
+  const now = new Date();
+  const hour = now.getHours();
   const greeting =
     hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = userName.split(' ')[0] ?? userName;
-  const dateLabel = new Date().toLocaleDateString('en-GB', {
+  const dateLabel = now.toLocaleDateString('en-GB', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 
@@ -257,28 +246,6 @@ function GreetingHeader({
           {greeting}, {firstName} 👋
         </h2>
         <p className="text-sm text-text-secondary mt-0.5">{dateLabel}</p>
-
-        {/* Quick summary pills */}
-        <div className="flex flex-wrap items-center gap-2 mt-3">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent-blue" />
-            {openJobs} open
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-amber/10 text-accent-amber">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent-amber" />
-            {inProgressToday} active
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-emerald/10 text-accent-emerald">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent-emerald" />
-            {completedToday} done today
-          </span>
-          {criticalJobs > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-red/10 text-accent-red">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent-red animate-pulse" />
-              {criticalJobs} critical
-            </span>
-          )}
-        </div>
       </div>
 
       {/* Right — New Job button */}
@@ -492,13 +459,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
   return (
     <div className="space-y-6">
       {/* Greeting header */}
-      <GreetingHeader
-        userName={userName}
-        openJobs={openJobs}
-        inProgressToday={inProgressToday}
-        completedToday={completedToday}
-        criticalJobs={criticalJobs}
-      />
+      <GreetingHeader userName={userName} />
 
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
