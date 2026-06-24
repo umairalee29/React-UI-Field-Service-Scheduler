@@ -144,6 +144,73 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
   );
 }
 
+function GreetingHeader({
+  userName,
+  openJobs,
+  inProgressToday,
+  completedToday,
+  criticalJobs,
+}: {
+  userName: string;
+  openJobs: number;
+  inProgressToday: number;
+  completedToday: number;
+  criticalJobs: number;
+}) {
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName = userName.split(' ')[0] ?? userName;
+  const dateLabel = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Left — greeting + date */}
+      <div>
+        <h2 className="text-2xl font-bold text-text-primary font-heading">
+          {greeting}, {firstName} 👋
+        </h2>
+        <p className="text-sm text-text-secondary mt-0.5">{dateLabel}</p>
+
+        {/* Quick summary pills */}
+        <div className="flex flex-wrap items-center gap-2 mt-3">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent-blue" />
+            {openJobs} open
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-amber/10 text-accent-amber">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent-amber" />
+            {inProgressToday} active
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-emerald/10 text-accent-emerald">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent-emerald" />
+            {completedToday} done today
+          </span>
+          {criticalJobs > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-accent-red/10 text-accent-red">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-red animate-pulse" />
+              {criticalJobs} critical
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Right — New Job button */}
+      <Link
+        href="/jobs/new"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-blue text-white text-sm font-semibold hover:bg-accent-blue/90 active:scale-95 transition-all self-start sm:self-auto flex-shrink-0"
+      >
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        New Job
+      </Link>
+    </div>
+  );
+}
+
 const KpiIcons = {
   openJobs: (
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -246,9 +313,10 @@ interface Props {
   criticalTrend: number;
   technicians: IUser[];
   todaysJobs: TodayJob[];
+  userName: string;
 }
 
-export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians, todaysJobs }: Props) {
+export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians, todaysJobs, userName }: Props) {
   const socket = useSocket();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -331,6 +399,15 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
 
   return (
     <div className="space-y-6">
+      {/* Greeting header */}
+      <GreetingHeader
+        userName={userName}
+        openJobs={openJobs}
+        inProgressToday={inProgressToday}
+        completedToday={completedToday}
+        criticalJobs={criticalJobs}
+      />
+
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Open Jobs" value={openJobs} color="#3b82f6" icon="openJobs" trend={openJobsTrend} higherIsBetter={false} />

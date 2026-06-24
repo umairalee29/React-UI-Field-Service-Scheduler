@@ -90,12 +90,13 @@ async function getDashboardData() {
 }
 
 export default async function DashboardPage() {
-  await auth();
+  const session = await auth();
+  const userName = session?.user?.name ?? 'Dispatcher';
   const data = await getDashboardData();
 
   return (
     <Suspense fallback={<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}</div>}>
-      <DashboardClient {...data} />
+      <DashboardClient {...data} userName={userName} />
     </Suspense>
   );
 }
