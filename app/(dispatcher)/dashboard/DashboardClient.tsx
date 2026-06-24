@@ -410,6 +410,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
   const socket = useSocket();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [totalJobs, setTotalJobs] = useState<number | null>(null);
 
   // Pre-populate from DB on mount
   useEffect(() => {
@@ -474,7 +475,8 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
             in_progress: 'Active', on_hold: 'Hold',
             completed: 'Done', cancelled: 'Cancelled',
           };
-          const { jobsByStatus } = d.data;
+          const { jobsByStatus, totalJobs: total } = d.data;
+          setTotalJobs(total as number);
           setStatusData(
             Object.entries(jobsByStatus).map(([name, value]) => ({
               name: SHORT_LABELS[name] ?? name,
@@ -521,7 +523,16 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
 
         {/* Bar chart */}
         <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Jobs by Status</CardTitle></CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle>Jobs by Status</CardTitle>
+              {totalJobs !== null && (
+                <p className="text-xs text-text-secondary mt-0.5">
+                  <span className="font-semibold text-text-primary">{totalJobs}</span> jobs total
+                </p>
+              )}
+            </div>
+          </CardHeader>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={statusData} barCategoryGap="30%" margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
               <CartesianGrid vertical={false} stroke="#1e293b" strokeDasharray="3 3" />
