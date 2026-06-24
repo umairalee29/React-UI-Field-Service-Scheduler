@@ -378,6 +378,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [totalJobs, setTotalJobs] = useState<number | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
 
   // Pre-populate from DB on mount
   useEffect(() => {
@@ -452,8 +453,9 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
             }))
           );
         }
+        setStatusLoading(false);
       })
-      .catch(console.error);
+      .catch(() => setStatusLoading(false));
   }, []);
 
   return (
@@ -494,6 +496,19 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
               )}
             </div>
           </CardHeader>
+          {statusLoading ? (
+            <div className="flex items-end justify-around gap-2 h-[240px] px-2 pb-6 pt-2">
+              {[65, 40, 85, 30, 55, 20].map((h, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2">
+                  <div
+                    className="w-full rounded-t-md animate-pulse bg-border-dark"
+                    style={{ height: `${h}%` }}
+                  />
+                  <div className="h-2.5 w-10 rounded animate-pulse bg-border-dark" />
+                </div>
+              ))}
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={statusData} barCategoryGap="30%" margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
               <CartesianGrid vertical={false} stroke="#1e293b" strokeDasharray="3 3" />
@@ -524,6 +539,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          )}
         </Card>
 
         {/* Technicians */}
