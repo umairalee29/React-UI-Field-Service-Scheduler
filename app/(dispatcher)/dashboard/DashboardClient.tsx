@@ -484,10 +484,10 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
       </div>
 
       {/* Chart + sidebar row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6 items-stretch">
 
         {/* Bar chart */}
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 h-full">
           <CardHeader>
             <div>
               <CardTitle>Jobs by Status</CardTitle>
@@ -545,7 +545,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         </Card>
 
         {/* Technicians */}
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 h-full">
           <CardHeader>
             <CardTitle>Technicians</CardTitle>
             <span className="text-xs text-text-secondary">{technicians.length} active</span>
@@ -605,7 +605,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         </Card>
 
         {/* Activity */}
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 h-full">
           <CardHeader>
             <CardTitle>Live Activity</CardTitle>
             <span className="flex items-center gap-1.5 text-xs text-accent-emerald">
