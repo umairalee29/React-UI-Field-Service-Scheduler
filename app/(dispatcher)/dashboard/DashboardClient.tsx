@@ -11,7 +11,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useSocket } from '@/hooks/useSocket';
 import { formatTime, formatDuration, timeAgo } from '@/lib/formatters';
 import type { IUser, IJob } from '@/types';
-import type { TodayJob } from './page';
+import type { TodayJob, OverdueJob } from './page';
 
 const STATUS_COLORS: Record<string, string> = {
   unassigned: '#64748b', assigned: '#3b82f6',
@@ -35,7 +35,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
 
   if (jobs.length === 0) {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <div>
             <CardTitle>Today&apos;s Schedule</CardTitle>
@@ -55,7 +55,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
   }
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <div>
           <CardTitle>Today&apos;s Schedule</CardTitle>
@@ -137,6 +137,90 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
                 </span>
               </div>
             </Link>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+const PRIORITY_LABELS: Record<string, string> = {
+  low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical',
+};
+
+function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
+  if (jobs.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Overdue Jobs</CardTitle>
+        </CardHeader>
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <svg className="h-10 w-10 text-accent-emerald mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm font-medium text-text-primary">All caught up!</p>
+          <p className="text-xs text-text-secondary mt-1">No overdue jobs right now</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="h-full border-accent-red/20">
+      {/* Header */}
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <svg className="h-4 w-4 text-accent-red flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <CardTitle className="text-accent-red">
+            Overdue
+            <span className="ml-2 text-xs font-medium bg-accent-red/10 text-accent-red px-1.5 py-0.5 rounded-full">
+              {jobs.length}
+            </span>
+          </CardTitle>
+        </div>
+        <Link href="/jobs" className="text-xs text-text-secondary hover:text-accent-blue transition-colors">
+          View all →
+        </Link>
+      </CardHeader>
+
+      {/* Job list — 3 rows visible, then scroll */}
+      <div className="space-y-2 max-h-[276px] overflow-y-auto">
+        {jobs.map((job) => {
+          const overdueBy = timeAgo(new Date(job.scheduledAt));
+          const priorityColor = PRIORITY_COLORS[job.priority] ?? '#64748b';
+
+          return (
+            <div
+              key={job._id}
+              className="flex items-start gap-3 rounded-lg bg-accent-red/5 border border-accent-red/10 px-3 py-2.5"
+            >
+              {/* Priority dot */}
+              <span className="h-2 w-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: priorityColor }} />
+
+              {/* Details */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-mono text-text-secondary">{job.jobNumber}</span>
+                  <span className="text-xs text-accent-red font-medium whitespace-nowrap flex-shrink-0">
+                    {overdueBy}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-text-primary truncate mt-0.5">{job.title}</p>
+                <p className="text-xs text-text-secondary truncate">{job.customer.name}</p>
+                <div className="mt-1.5">
+                  {job.technician ? (
+                    <span className="text-xs text-text-secondary">{job.technician.name}</span>
+                  ) : (
+                    <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
+                      Unassigned
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
@@ -313,10 +397,11 @@ interface Props {
   criticalTrend: number;
   technicians: IUser[];
   todaysJobs: TodayJob[];
+  overdueJobs: OverdueJob[];
   userName: string;
 }
 
-export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians, todaysJobs, userName }: Props) {
+export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians, todaysJobs, overdueJobs, userName }: Props) {
   const socket = useSocket();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -416,8 +501,15 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         <KpiCard label="Critical Jobs" value={criticalJobs} color="#ef4444" icon="critical" trend={criticalTrend} higherIsBetter={false} />
       </div>
 
-      {/* Today's Schedule */}
-      <TodaySchedule jobs={todaysJobs} />
+      {/* Today's Schedule + Overdue — 2-column grid, equal height */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        <div className="lg:col-span-2 h-full">
+          <TodaySchedule jobs={todaysJobs} />
+        </div>
+        <div className="lg:col-span-1 h-full">
+          <OverdueCallout jobs={overdueJobs} />
+        </div>
+      </div>
 
       {/* Chart + sidebar row */}
       <div className="grid lg:grid-cols-3 gap-6">

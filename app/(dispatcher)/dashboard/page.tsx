@@ -19,9 +19,21 @@ export interface TodayJob {
   technician?: { name: string; avatar?: string } | null;
 }
 
+export interface OverdueJob {
+  _id: string;
+  jobNumber: string;
+  title: string;
+  status: string;
+  priority: string;
+  scheduledAt: string;
+  customer: { name: string };
+  technician?: { name: string } | null;
+}
+
 async function getDashboardData() {
   await connectDB();
 
+  const now = new Date();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -40,6 +52,7 @@ async function getDashboardData() {
     criticalJobsYesterday,
     rawTechnicians,
     rawTodaysJobs,
+    rawOverdueJobs,
   ] = await Promise.all([
     Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] } }),
     Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: today, $lt: tomorrow } }),
@@ -55,11 +68,19 @@ async function getDashboardData() {
       .sort({ scheduledAt: 1 })
       .limit(8)
       .lean(),
+    // Overdue: scheduledAt in the past, not completed or cancelled
+    Job.find({
+      scheduledAt: { $lt: now },
+      status: { $nin: ['completed', 'cancelled'] },
+    })
+      .populate('technicianId', 'name')
+      .sort({ scheduledAt: 1 })
+      .limit(5)
+      .lean(),
   ]);
 
   const technicians = rawTechnicians as unknown as IUser[];
 
-  // Serialize for the client component
   const todaysJobs: TodayJob[] = rawTodaysJobs.map((j) => {
     const tech = j.technicianId as unknown as { name: string; avatar?: string } | null;
     return {
@@ -75,6 +96,20 @@ async function getDashboardData() {
     };
   });
 
+  const overdueJobs: OverdueJob[] = rawOverdueJobs.map((j) => {
+    const tech = j.technicianId as unknown as { name: string } | null;
+    return {
+      _id: j._id.toString(),
+      jobNumber: j.jobNumber,
+      title: j.title,
+      status: j.status,
+      priority: j.priority,
+      scheduledAt: (j.scheduledAt as Date).toISOString(),
+      customer: { name: j.customer.name },
+      technician: tech ? { name: tech.name } : null,
+    };
+  });
+
   return {
     openJobs,
     inProgressToday,
@@ -86,6 +121,7 @@ async function getDashboardData() {
     criticalTrend: criticalJobs - criticalJobsYesterday,
     technicians,
     todaysJobs,
+    overdueJobs,
   };
 }
 
