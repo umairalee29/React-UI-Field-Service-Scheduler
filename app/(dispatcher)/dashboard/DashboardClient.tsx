@@ -376,6 +376,7 @@ interface Props {
 export function DashboardClient({ openJobs, inProgressToday, completedToday, criticalJobs, openJobsTrend, inProgressTrend, completedTrend, criticalTrend, technicians, todaysJobs, overdueJobs, userName }: Props) {
   const socket = useSocket();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [totalJobs, setTotalJobs] = useState<number | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
@@ -395,8 +396,9 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
           }));
           setActivity(historical);
         }
+        setActivityLoading(false);
       })
-      .catch(console.error);
+      .catch(() => setActivityLoading(false));
   }, []);
 
   // Real-time socket events prepended on top
@@ -611,21 +613,46 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
               Live
             </span>
           </CardHeader>
-          <div className="space-y-3 max-h-56 overflow-y-auto">
-            {activity.map((item) => (
-              <div key={item.id} className="flex items-start gap-2">
-                <div className="flex-shrink-0 mt-1">
-                  {item.isLive
-                    ? <span className="h-1.5 w-1.5 rounded-full bg-accent-blue block" />
-                    : <span className="h-1.5 w-1.5 rounded-full bg-border-dark block" />}
+          {activityLoading ? (
+            /* Loading skeleton — 4 placeholder rows */
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-border-dark animate-pulse mt-1.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-3/4 rounded bg-border-dark animate-pulse" />
+                    <div className="h-2.5 w-1/3 rounded bg-border-dark animate-pulse" />
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-text-primary truncate">{item.message}</p>
-                  <p className="text-xs text-text-secondary">{timeAgo(item.at)}</p>
+              ))}
+            </div>
+          ) : activity.length === 0 ? (
+            /* Empty state — no historical activity */
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <svg className="h-8 w-8 text-border-dark mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm text-text-secondary">No recent activity</p>
+              <p className="text-xs text-text-secondary/60 mt-1">Status changes will appear here in real time</p>
+            </div>
+          ) : (
+            /* Activity list */
+            <div className="space-y-3 max-h-56 overflow-y-auto">
+              {activity.map((item) => (
+                <div key={item.id} className="flex items-start gap-2">
+                  <div className="flex-shrink-0 mt-1">
+                    {item.isLive
+                      ? <span className="h-1.5 w-1.5 rounded-full bg-accent-blue block" />
+                      : <span className="h-1.5 w-1.5 rounded-full bg-border-dark block" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-text-primary truncate">{item.message}</p>
+                    <p className="text-xs text-text-secondary">{timeAgo(item.at)}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>
