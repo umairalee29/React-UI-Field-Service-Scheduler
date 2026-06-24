@@ -10,8 +10,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { useSocket } from '@/hooks/useSocket';
 import { formatTime, formatDuration, timeAgo } from '@/lib/formatters';
-import type { IUser, IJob } from '@/types';
-import type { TodayJob, OverdueJob } from './page';
+import type { IJob } from '@/types';
+import type { TodayJob, OverdueJob, TechnicianWithCount } from './page';
 
 const STATUS_COLORS: Record<string, string> = {
   unassigned: '#64748b', assigned: '#3b82f6',
@@ -400,7 +400,7 @@ interface Props {
   inProgressTrend: number;
   completedTrend: number;
   criticalTrend: number;
-  technicians: IUser[];
+  technicians: TechnicianWithCount[];
   todaysJobs: TodayJob[];
   overdueJobs: OverdueJob[];
   userName: string;
@@ -556,18 +556,61 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
 
         {/* Technicians */}
         <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Technicians</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Technicians</CardTitle>
+            <span className="text-xs text-text-secondary">{technicians.length} active</span>
+          </CardHeader>
           <div className="space-y-3 max-h-56 overflow-y-auto">
-            {technicians.map((tech) => (
-              <div key={tech._id} className="flex items-center gap-3">
-                <Avatar name={tech.name} src={tech.avatar} size="md" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{tech.name}</p>
-                  <p className="text-xs text-text-secondary truncate">{(tech.skills ?? []).slice(0, 2).join(', ')}</p>
-                </div>
-                <div className={`h-2 w-2 rounded-full flex-shrink-0 ${tech.isAvailable ? 'bg-accent-emerald' : 'bg-accent-amber'}`} />
-              </div>
-            ))}
+            {technicians
+              .slice()
+              .sort((a, b) => b.activeJobCount - a.activeJobCount)
+              .map((tech) => {
+                const count = tech.activeJobCount;
+                const workloadColor =
+                  count === 0 ? '#64748b'
+                  : count <= 2 ? '#10b981'
+                  : count <= 4 ? '#f59e0b'
+                  : '#ef4444';
+                const workloadPct = Math.min((count / 5) * 100, 100);
+
+                return (
+                  <div key={tech._id} className="space-y-1.5">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar with availability ring */}
+                      <div className="relative flex-shrink-0">
+                        <Avatar name={tech.name} src={tech.avatar} size="md" />
+                        <span
+                          className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-bg-card"
+                          style={{ background: tech.isAvailable ? '#10b981' : '#f59e0b' }}
+                        />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-text-primary truncate">{tech.name}</p>
+                        <p className="text-xs text-text-secondary truncate">
+                          {tech.skills.slice(0, 2).join(', ') || 'No skills listed'}
+                        </p>
+                      </div>
+
+                      {/* Active job count badge */}
+                      <span
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                        style={{ background: `${workloadColor}18`, color: workloadColor }}
+                      >
+                        {count} job{count !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    {/* Workload bar */}
+                    <div className="h-1 bg-border-dark rounded-full overflow-hidden ml-9">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: `${workloadPct}%`, background: workloadColor }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </Card>
 

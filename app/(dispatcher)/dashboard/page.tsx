@@ -5,7 +5,15 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { DashboardClient } from './DashboardClient';
 import Job from '@/models/Job';
 import User from '@/models/User';
-import type { IUser } from '@/types';
+
+export interface TechnicianWithCount {
+  _id: string;
+  name: string;
+  avatar?: string;
+  skills: string[];
+  isAvailable: boolean;
+  activeJobCount: number;
+}
 
 export interface TodayJob {
   _id: string;
@@ -53,6 +61,7 @@ async function getDashboardData() {
     rawTechnicians,
     rawTodaysJobs,
     rawOverdueJobs,
+    activeJobCounts,
   ] = await Promise.all([
     Job.countDocuments({ status: { $in: ['unassigned', 'assigned'] } }),
     Job.countDocuments({ status: 'in_progress', scheduledAt: { $gte: today, $lt: tomorrow } }),
@@ -68,7 +77,6 @@ async function getDashboardData() {
       .sort({ scheduledAt: 1 })
       .limit(8)
       .lean(),
-    // Overdue: scheduledAt in the past, not completed or cancelled
     Job.find({
       scheduledAt: { $lt: now },
       status: { $nin: ['completed', 'cancelled'] },
@@ -77,9 +85,30 @@ async function getDashboardData() {
       .sort({ scheduledAt: 1 })
       .limit(5)
       .lean(),
+    Job.aggregate([
+      { $match: { status: { $in: ['assigned', 'in_progress'] }, technicianId: { $ne: null } } },
+      { $group: { _id: '$technicianId', count: { $sum: 1 } } },
+    ]),
   ]);
 
-  const technicians = rawTechnicians as unknown as IUser[];
+  // Build a lookup map: technicianId → active job count
+  const countMap = new Map<string, number>(
+    (activeJobCounts as { _id: unknown; count: number }[]).map((r) => [
+      String(r._id),
+      r.count,
+    ])
+  );
+
+  const technicians: TechnicianWithCount[] = (rawTechnicians as unknown as {
+    _id: unknown; name: string; avatar?: string; skills?: string[]; isAvailable?: boolean;
+  }[]).map((t) => ({
+    _id: String(t._id),
+    name: t.name,
+    avatar: t.avatar,
+    skills: t.skills ?? [],
+    isAvailable: t.isAvailable ?? true,
+    activeJobCount: countMap.get(String(t._id)) ?? 0,
+  }));
 
   const todaysJobs: TodayJob[] = rawTodaysJobs.map((j) => {
     const tech = j.technicianId as unknown as { name: string; avatar?: string } | null;
