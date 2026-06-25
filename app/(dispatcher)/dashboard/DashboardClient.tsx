@@ -35,6 +35,8 @@ const STATUS_CHART_LABELS: Record<string, string> = {
   completed: 'Done', cancelled: 'Cancelled',
 };
 
+const MAX_WORKLOAD_JOBS = 5;
+
 function getWorkloadColor(count: number): string {
   if (count === 0) return '#64748b';
   if (count <= 2)  return '#10b981';
@@ -51,8 +53,8 @@ function UnassignedBadge() {
 }
 
 function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
-  const today = new Date();
-  const dateLabel = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
   if (jobs.length === 0) {
     return (
@@ -98,7 +100,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
       {/* Rows */}
       <div className="divide-y divide-border-dark/50">
         {jobs.map((job) => {
-          const isPast = new Date(job.scheduledAt) < today && job.status !== 'completed';
+          const isPast = new Date(job.scheduledAt) < now && job.status !== 'completed';
           const statusColor = STATUS_COLORS[job.status] ?? '#64748b';
           const priorityColor = PRIORITY_COLORS[job.priority] ?? '#64748b';
 
@@ -110,7 +112,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
             >
               {/* Time */}
               <div className="flex items-center gap-2 md:block">
-                <span className={`text-sm font-mono font-medium ${isPast && job.status !== 'completed' ? 'text-accent-red' : 'text-text-primary'}`}>
+                <span className={`text-sm font-mono font-medium ${isPast ? 'text-accent-red' : 'text-text-primary'}`}>
                   {formatTime(job.scheduledAt)}
                 </span>
                 <span className="text-xs text-text-secondary md:block">{formatDuration(job.estimatedDuration)}</span>
@@ -229,9 +231,7 @@ function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
                   {job.technician ? (
                     <span className="text-xs text-text-secondary">{job.technician.name}</span>
                   ) : (
-                    <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
-                      Unassigned
-                    </span>
+                    <UnassignedBadge />
                   )}
                 </div>
               </div>
@@ -569,7 +569,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
             {sortedTechnicians.map((tech) => {
                 const count = tech.activeJobCount;
                 const workloadColor = getWorkloadColor(count);
-                const workloadPct = Math.min((count / 5) * 100, 100);
+                const workloadPct = Math.min((count / MAX_WORKLOAD_JOBS) * 100, 100);
 
                 return (
                   <div key={tech._id} className="space-y-1.5">
