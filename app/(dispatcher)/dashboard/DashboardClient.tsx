@@ -107,18 +107,27 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
           return (
             <Link
               key={job._id}
-              href={`/jobs`}
+              href={`/jobs/${job._id}`}
               className="grid grid-cols-1 md:grid-cols-[90px_1fr_1fr_160px_110px] gap-2 md:gap-4 px-2 py-3 rounded-lg hover:bg-bg-primary/50 transition-colors group items-center"
             >
-              {/* Time */}
-              <div className="flex items-center gap-2 md:block">
-                <span className={`text-sm font-mono font-medium ${isPast ? 'text-accent-red' : 'text-text-primary'}`}>
-                  {formatTime(job.scheduledAt)}
+              {/* Time — mobile: time+duration on left, status pill on right */}
+              <div className="flex items-center justify-between gap-2 md:block">
+                <div className="flex items-center gap-2 md:block">
+                  <span className={`text-sm font-mono font-medium ${isPast ? 'text-accent-red' : 'text-text-primary'}`}>
+                    {formatTime(job.scheduledAt)}
+                  </span>
+                  <span className="text-xs text-text-secondary md:block">{formatDuration(job.estimatedDuration)}</span>
+                </div>
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full md:hidden"
+                  style={{ background: `${statusColor}18`, color: statusColor }}
+                >
+                  <span className="h-1 w-1 rounded-full" style={{ background: statusColor }} />
+                  {STATUS_LABELS[job.status] ?? job.status}
                 </span>
-                <span className="text-xs text-text-secondary md:block">{formatDuration(job.estimatedDuration)}</span>
               </div>
 
-              {/* Job */}
+              {/* Job — mobile: also shows customer + technician inline below title */}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span
@@ -128,15 +137,24 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
                   <span className="text-xs font-mono text-text-secondary">{job.jobNumber}</span>
                 </div>
                 <p className="text-sm font-medium text-text-primary truncate mt-0.5">{job.title}</p>
+                <div className="flex items-center gap-1.5 mt-1 md:hidden">
+                  <span className="text-xs text-text-secondary truncate">{job.customer.name}</span>
+                  <span className="text-text-secondary/40 text-xs">·</span>
+                  {job.technician ? (
+                    <span className="text-xs text-text-secondary truncate">{job.technician.name}</span>
+                  ) : (
+                    <UnassignedBadge />
+                  )}
+                </div>
               </div>
 
-              {/* Customer */}
-              <div className="min-w-0">
+              {/* Customer — desktop only */}
+              <div className="min-w-0 hidden md:block">
                 <p className="text-sm text-text-secondary truncate">{job.customer.name}</p>
               </div>
 
-              {/* Technician */}
-              <div className="flex items-center gap-2 min-w-0">
+              {/* Technician — desktop only */}
+              <div className="hidden md:flex items-center gap-2 min-w-0">
                 {job.technician ? (
                   <>
                     <Avatar name={job.technician.name} src={job.technician.avatar} size="sm" />
@@ -147,8 +165,8 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
                 )}
               </div>
 
-              {/* Status */}
-              <div>
+              {/* Status — desktop only */}
+              <div className="hidden md:block">
                 <span
                   className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
                   style={{ background: `${statusColor}18`, color: statusColor }}
@@ -170,7 +188,7 @@ function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
     return (
       <Card className="h-full">
         <CardHeader>
-          <CardTitle>Overdue Jobs</CardTitle>
+          <CardTitle>Overdue</CardTitle>
         </CardHeader>
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <svg className="h-10 w-10 text-accent-emerald mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
