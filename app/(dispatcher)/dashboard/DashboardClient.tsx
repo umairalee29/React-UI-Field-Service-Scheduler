@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -396,6 +396,11 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
   const [totalJobs, setTotalJobs] = useState<number | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
 
+  const sortedTechnicians = useMemo(
+    () => technicians.slice().sort((a, b) => b.activeJobCount - a.activeJobCount),
+    [technicians]
+  );
+
   // Pre-populate from DB on mount
   useEffect(() => {
     fetch('/api/analytics/activity')
@@ -561,10 +566,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
             <span className="text-xs text-text-secondary">{technicians.length} active</span>
           </CardHeader>
           <div className="space-y-3 max-h-56 overflow-y-auto">
-            {technicians
-              .slice()
-              .sort((a, b) => b.activeJobCount - a.activeJobCount)
-              .map((tech) => {
+            {sortedTechnicians.map((tech) => {
                 const count = tech.activeJobCount;
                 const workloadColor = getWorkloadColor(count);
                 const workloadPct = Math.min((count / 5) * 100, 100);
