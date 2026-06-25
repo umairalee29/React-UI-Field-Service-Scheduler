@@ -156,10 +156,6 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
   );
 }
 
-const PRIORITY_LABELS: Record<string, string> = {
-  low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical',
-};
-
 function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
   if (jobs.length === 0) {
     return (
