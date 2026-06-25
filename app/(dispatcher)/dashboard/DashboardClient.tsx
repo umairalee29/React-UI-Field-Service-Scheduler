@@ -29,6 +29,14 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: '#64748b', medium: '#3b82f6', high: '#f59e0b', critical: '#ef4444',
 };
 
+function UnassignedBadge() {
+  return (
+    <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
+      Unassigned
+    </span>
+  );
+}
+
 function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
   const today = new Date();
   const dateLabel = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -120,9 +128,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
                     <span className="text-sm text-text-primary truncate">{job.technician.name}</span>
                   </>
                 ) : (
-                  <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
-                    Unassigned
-                  </span>
+                  <UnassignedBadge />
                 )}
               </div>
 
