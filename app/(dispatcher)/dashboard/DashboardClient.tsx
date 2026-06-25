@@ -35,6 +35,13 @@ const STATUS_CHART_LABELS: Record<string, string> = {
   completed: 'Done', cancelled: 'Cancelled',
 };
 
+function getWorkloadColor(count: number): string {
+  if (count === 0) return '#64748b';
+  if (count <= 2)  return '#10b981';
+  if (count <= 4)  return '#f59e0b';
+  return '#ef4444';
+}
+
 function UnassignedBadge() {
   return (
     <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
@@ -559,11 +566,7 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
               .sort((a, b) => b.activeJobCount - a.activeJobCount)
               .map((tech) => {
                 const count = tech.activeJobCount;
-                const workloadColor =
-                  count === 0 ? '#64748b'
-                  : count <= 2 ? '#10b981'
-                  : count <= 4 ? '#f59e0b'
-                  : '#ef4444';
+                const workloadColor = getWorkloadColor(count);
                 const workloadPct = Math.min((count / 5) * 100, 100);
 
                 return (
