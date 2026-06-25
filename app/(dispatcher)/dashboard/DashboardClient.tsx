@@ -98,7 +98,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
       {/* Rows */}
       <div className="divide-y divide-border-dark/50">
         {jobs.map((job) => {
-          const isPast = new Date(job.scheduledAt) < new Date() && job.status !== 'completed';
+          const isPast = new Date(job.scheduledAt) < today && job.status !== 'completed';
           const statusColor = STATUS_COLORS[job.status] ?? '#64748b';
           const priorityColor = PRIORITY_COLORS[job.priority] ?? '#64748b';
 
