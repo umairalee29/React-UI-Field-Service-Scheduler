@@ -29,6 +29,12 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: '#64748b', medium: '#3b82f6', high: '#f59e0b', critical: '#ef4444',
 };
 
+const STATUS_CHART_LABELS: Record<string, string> = {
+  unassigned: 'Open', assigned: 'Assigned',
+  in_progress: 'Active', on_hold: 'Hold',
+  completed: 'Done', cancelled: 'Cancelled',
+};
+
 function UnassignedBadge() {
   return (
     <span className="text-xs font-medium text-accent-amber bg-accent-amber/10 px-2 py-0.5 rounded-full">
@@ -446,16 +452,11 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {
-          const SHORT_LABELS: Record<string, string> = {
-            unassigned: 'Open', assigned: 'Assigned',
-            in_progress: 'Active', on_hold: 'Hold',
-            completed: 'Done', cancelled: 'Cancelled',
-          };
           const { jobsByStatus, totalJobs: total } = d.data;
           setTotalJobs(total as number);
           setStatusData(
             Object.entries(jobsByStatus).map(([name, value]) => ({
-              name: SHORT_LABELS[name] ?? name,
+              name: STATUS_CHART_LABELS[name] ?? name,
               value: value as number,
               color: STATUS_COLORS[name] ?? '#64748b',
             }))
