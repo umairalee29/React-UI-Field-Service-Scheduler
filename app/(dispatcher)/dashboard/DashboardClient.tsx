@@ -54,17 +54,12 @@ function UnassignedBadge() {
 
 function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
   const now = new Date();
-  const dateLabel = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
   if (jobs.length === 0) {
     return (
       <Card className="h-full">
         <CardHeader>
-          <div>
-            <CardTitle>Today&apos;s Schedule</CardTitle>
-            <p className="text-xs text-text-secondary mt-0.5">{dateLabel}</p>
-          </div>
-          <Link href="/jobs/new" className="text-xs text-accent-blue hover:underline">+ New Job</Link>
+          <CardTitle>Today&apos;s Schedule</CardTitle>
         </CardHeader>
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <svg className="h-10 w-10 text-border-dark mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,10 +75,7 @@ function TodaySchedule({ jobs }: { jobs: TodayJob[] }) {
   return (
     <Card className="h-full">
       <CardHeader>
-        <div>
-          <CardTitle>Today&apos;s Schedule</CardTitle>
-          <p className="text-xs text-text-secondary mt-0.5">{dateLabel}</p>
-        </div>
+        <CardTitle>Today&apos;s Schedule</CardTitle>
         <div className="flex items-center gap-3">
           <span className="text-xs text-text-secondary">{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
           <Link href="/jobs" className="text-xs text-accent-blue hover:underline">View all →</Link>
@@ -228,9 +220,10 @@ function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
           const priorityColor = PRIORITY_COLORS[job.priority] ?? '#64748b';
 
           return (
-            <div
+            <Link
               key={job._id}
-              className="flex items-start gap-3 rounded-lg bg-accent-red/5 border border-accent-red/10 px-3 py-2.5"
+              href={`/jobs/${job._id}`}
+              className="flex items-start gap-3 rounded-lg bg-accent-red/5 border border-accent-red/10 px-3 py-2.5 hover:bg-accent-red/10 transition-colors"
             >
               {/* Priority dot */}
               <span className="h-2 w-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: priorityColor }} />
@@ -253,7 +246,7 @@ function OverdueCallout({ jobs }: { jobs: OverdueJob[] }) {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -544,36 +537,36 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
               ))}
             </div>
           ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={statusData} barCategoryGap="30%" margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
-              <CartesianGrid vertical={false} stroke="#1e293b" strokeDasharray="3 3" />
-              <XAxis
-                dataKey="name"
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
-                tickLine={false}
-                axisLine={false}
-                interval={0}
-              />
-              <YAxis
-                tick={{ fill: '#94a3b8', fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-                allowDecimals={false}
-              />
-              <Tooltip
-                cursor={{ fill: '#ffffff08' }}
-                contentStyle={{ background: '#1a2235', border: '1px solid #1e293b', borderRadius: 8 }}
-                labelStyle={{ color: '#f1f5f9', fontWeight: 600, textTransform: 'capitalize' }}
-                itemStyle={{ color: '#94a3b8' }}
-                formatter={(value: number) => [value, 'Jobs']}
-              />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={56}>
-                {statusData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} fillOpacity={0.85} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={statusData} barCategoryGap="30%" margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
+                <CartesianGrid vertical={false} stroke="#1e293b" strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: '#94a3b8', fontSize: 11 }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: '#ffffff08' }}
+                  contentStyle={{ background: '#1a2235', border: '1px solid #1e293b', borderRadius: 8 }}
+                  labelStyle={{ color: '#f1f5f9', fontWeight: 600, textTransform: 'capitalize' }}
+                  itemStyle={{ color: '#94a3b8' }}
+                  formatter={(value: number) => [value, 'Jobs']}
+                />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={56}>
+                  {statusData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} fillOpacity={0.85} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           )}
         </Card>
 
@@ -585,48 +578,51 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
           </CardHeader>
           <div className="space-y-3 max-h-56 overflow-y-auto">
             {sortedTechnicians.map((tech) => {
-                const count = tech.activeJobCount;
-                const workloadColor = getWorkloadColor(count);
-                const workloadPct = Math.min((count / MAX_WORKLOAD_JOBS) * 100, 100);
+              const count = tech.activeJobCount;
+              const workloadColor = getWorkloadColor(count);
+              const workloadPct = Math.min((count / MAX_WORKLOAD_JOBS) * 100, 100);
 
-                return (
-                  <div key={tech._id} className="space-y-1.5">
-                    <div className="flex items-center gap-3">
-                      {/* Avatar with availability ring */}
-                      <div className="relative flex-shrink-0">
-                        <Avatar name={tech.name} src={tech.avatar} size="md" />
-                        <span
-                          className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-bg-card"
-                          style={{ background: tech.isAvailable ? '#10b981' : '#f59e0b' }}
-                        />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary truncate">{tech.name}</p>
-                        <p className="text-xs text-text-secondary truncate">
-                          {tech.skills.slice(0, 2).join(', ') || 'No skills listed'}
-                        </p>
-                      </div>
-
-                      {/* Active job count badge */}
+              return (
+                <div key={tech._id} className="space-y-1.5">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar with availability ring */}
+                    <div className="relative flex-shrink-0">
+                      <Avatar name={tech.name} src={tech.avatar} size="md" />
                       <span
-                        className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                        style={{ background: `${workloadColor}18`, color: workloadColor }}
-                      >
-                        {count} job{count !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-
-                    {/* Workload bar */}
-                    <div className="h-1 bg-border-dark rounded-full overflow-hidden ml-9">
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{ width: `${workloadPct}%`, background: workloadColor }}
+                        className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-bg-card"
+                        style={{ background: tech.isAvailable ? '#10b981' : '#f59e0b' }}
                       />
                     </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">{tech.name}</p>
+                      <p className="text-xs text-text-secondary truncate">
+                        {tech.skills.slice(0, 2).join(', ') || 'No skills listed'}
+                      </p>
+                      <p className="text-xs font-medium mt-0.5" style={{ color: tech.isAvailable ? '#10b981' : '#f59e0b' }}>
+                        {tech.isAvailable ? 'Available' : 'Unavailable'}
+                      </p>
+                    </div>
+
+                    {/* Active job count badge */}
+                    <span
+                      className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                      style={{ background: `${workloadColor}18`, color: workloadColor }}
+                    >
+                      {count} job{count !== 1 ? 's' : ''}
+                    </span>
                   </div>
-                );
-              })}
+
+                  {/* Workload bar */}
+                  <div className="h-1 bg-border-dark rounded-full overflow-hidden ml-9">
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{ width: `${workloadPct}%`, background: workloadColor }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Card>
 
@@ -634,10 +630,12 @@ export function DashboardClient({ openJobs, inProgressToday, completedToday, cri
         <Card className="lg:col-span-1 h-full">
           <CardHeader>
             <CardTitle>Live Activity</CardTitle>
-            <span className="flex items-center gap-1.5 text-xs text-accent-emerald">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent-emerald animate-pulse" />
-              Live
-            </span>
+            {!activityLoading && (
+              <span className="flex items-center gap-1.5 text-xs text-accent-emerald">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent-emerald animate-pulse" />
+                Live
+              </span>
+            )}
           </CardHeader>
           {activityLoading ? (
             /* Loading skeleton — 4 placeholder rows */
