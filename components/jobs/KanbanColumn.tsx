@@ -23,6 +23,15 @@ const STATUS_LABELS: Record<JobStatus, string> = {
   cancelled: 'Cancelled',
 };
 
+const EMPTY_MESSAGES: Record<JobStatus, string> = {
+  unassigned: 'No unassigned jobs',
+  assigned:   'No assigned jobs',
+  in_progress:'Nothing in progress',
+  on_hold:    'Nothing on hold',
+  completed:  'No completed jobs',
+  cancelled:  'No cancelled jobs',
+};
+
 interface Props {
   status: JobStatus;
   jobs: IJob[];
@@ -58,8 +67,24 @@ export function KanbanColumn({ status, jobs, onJobClick }: Props) {
         <SortableContext items={jobs.map((j) => j._id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 scrollbar-thin">
             {jobs.length === 0 ? (
-              <div className="text-center py-8 text-xs text-text-secondary/50 italic">
-                No jobs
+              <div className="flex flex-col items-center justify-center py-10 gap-2 select-none">
+                <div
+                  className="h-10 w-10 rounded-full flex items-center justify-center"
+                  style={{ background: `${color}15` }}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    style={{ color }}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                </div>
+                <p className="text-xs font-medium text-text-secondary/60">{EMPTY_MESSAGES[status]}</p>
+                <p className="text-[10px] text-text-secondary/35">Drop cards here</p>
               </div>
             ) : (
               jobs.map((job) => (
