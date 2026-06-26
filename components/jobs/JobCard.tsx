@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { PriorityBadge } from '@/components/ui/Badge';
+import { PriorityBadge, StatusBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { formatScheduledAt, formatDuration } from '@/lib/formatters';
 import type { IJob, IUser } from '@/types';
@@ -67,12 +67,16 @@ export function JobCard({ job, onClick }: Props) {
           <p className="text-xs text-text-secondary">{formatDuration(job.estimatedDuration)}</p>
         </div>
 
-        {tech && (
-          <div className="flex items-center gap-1.5 pt-1 border-t border-border-dark">
-            <Avatar name={tech.name} src={tech.avatar} size="sm" />
-            <span className="text-xs text-text-secondary truncate">{tech.name}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5 pt-1 border-t border-border-dark">
+          {tech ? (
+            <>
+              <Avatar name={tech.name} src={tech.avatar} size="sm" />
+              <span className="text-xs text-text-secondary truncate">{tech.name}</span>
+            </>
+          ) : (
+            <StatusBadge status="unassigned" />
+          )}
+        </div>
       </div>
     </div>
   );
