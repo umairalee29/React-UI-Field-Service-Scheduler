@@ -45,8 +45,10 @@ export function KanbanColumn({ status, jobs, onJobClick }: Props) {
   return (
     <div className="flex flex-col min-w-[280px] max-w-[280px]">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+      <div
+        className="flex items-center gap-2 mb-3 px-3 py-2.5 bg-bg-card rounded-xl border border-border-dark border-t-2"
+        style={{ borderTopColor: color }}
+      >
         <span className="text-sm font-semibold text-text-primary">{STATUS_LABELS[status]}</span>
         <span
           className="ml-auto text-xs font-mono px-2 py-0.5 rounded-full"
