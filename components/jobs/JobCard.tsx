@@ -14,6 +14,14 @@ const PRIORITY_HEX: Record<string, string> = {
   critical: '#ef4444',
 };
 
+const TYPE_STYLE: Record<string, string> = {
+  installation: 'bg-bg-card text-text-secondary',
+  maintenance:  'bg-bg-card text-text-secondary',
+  repair:       'bg-bg-card text-text-secondary',
+  inspection:   'bg-bg-card text-text-secondary',
+  emergency:    'bg-accent-red/10 text-accent-red',
+};
+
 interface Props {
   job: IJob;
   onClick: (job: IJob) => void;
@@ -54,7 +62,12 @@ export function JobCard({ job, onClick }: Props) {
       <div className="p-3 pl-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="font-mono text-[10px] text-text-secondary">{job.jobNumber}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-mono text-[10px] text-text-secondary">{job.jobNumber}</p>
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded capitalize ${TYPE_STYLE[job.type] ?? 'bg-bg-card text-text-secondary'}`}>
+                {job.type}
+              </span>
+            </div>
             <p className="text-sm font-medium text-text-primary line-clamp-2 leading-snug mt-0.5">{job.title}</p>
           </div>
           <PriorityBadge priority={job.priority} className="flex-shrink-0" />
