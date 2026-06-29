@@ -281,6 +281,16 @@ export default function JobsPage() {
         </div>
       </div>
 
+      {/* Count */}
+      {!isLoading && (
+        <p className="text-xs text-text-secondary -mt-1">
+          Showing{' '}
+          <span className="font-semibold text-text-primary">{jobs.length}</span>{' '}
+          {jobs.length === 1 ? 'job' : 'jobs'}
+          {hasActiveFilters && ' matching current filters'}
+        </p>
+      )}
+
       {/* Board */}
       <div className="flex-1 min-h-0">
         {isLoading ? (
