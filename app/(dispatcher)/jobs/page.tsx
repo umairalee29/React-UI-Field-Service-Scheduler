@@ -19,10 +19,28 @@ const CalendarView = dynamic(
   { ssr: false, loading: () => <div className="h-96 flex items-center justify-center text-text-secondary">Loading calendar…</div> }
 );
 
+const STATUS_OPTIONS = [
+  { value: 'unassigned',  label: 'Unassigned' },
+  { value: 'assigned',    label: 'Assigned' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'on_hold',     label: 'On Hold' },
+  { value: 'completed',   label: 'Completed' },
+  { value: 'cancelled',   label: 'Cancelled' },
+];
+
+const PRIORITY_OPTIONS = [
+  { value: 'low',      label: 'Low' },
+  { value: 'medium',   label: 'Medium' },
+  { value: 'high',     label: 'High' },
+  { value: 'critical', label: 'Critical' },
+];
+
 export default function JobsPage() {
   const [tab, setTab] = useState<'kanban' | 'calendar'>('kanban');
   const { filters, setFilters } = useJobStore();
   const { jobs, isLoading } = useJobs(filters);
+
+  const hasActiveFilters = !!(filters.search || filters.status || filters.priority || filters.dateFrom);
 
   return (
     <div className="space-y-4 h-full flex flex-col">
@@ -45,54 +63,87 @@ export default function JobsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <Input
-          placeholder="Search jobs…"
-          value={filters.search ?? ''}
-          onChange={(e) => setFilters({ search: e.target.value })}
-          className="w-48"
-        />
-        <Select
-          value={filters.status ?? ''}
-          onChange={(e) => setFilters({ status: e.target.value as typeof filters.status })}
-          className="w-40"
-        >
-          <option value="">All statuses</option>
-          {['unassigned','assigned','in_progress','on_hold','completed','cancelled'].map((s) => (
-            <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
-          ))}
-        </Select>
-        <Select
-          value={filters.priority ?? ''}
-          onChange={(e) => setFilters({ priority: e.target.value as typeof filters.priority })}
-          className="w-36"
-        >
-          <option value="">All priorities</option>
-          {['low','medium','high','critical'].map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </Select>
-        <Input
-          type="date"
-          value={filters.dateFrom ?? ''}
-          onChange={(e) => setFilters({ dateFrom: e.target.value })}
-          className="w-40"
-        />
-        <Input
-          type="date"
-          value={filters.dateTo ?? ''}
-          onChange={(e) => setFilters({ dateTo: e.target.value })}
-          className="w-40"
-        />
-        {(filters.search || filters.status || filters.priority || filters.dateFrom) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setFilters({ search: '', status: '', priority: '', dateFrom: '', dateTo: '' })}
-          >
-            Clear
-          </Button>
-        )}
+      <div className="bg-bg-card border border-border-dark rounded-xl px-4 py-3">
+        <div className="flex flex-wrap items-end gap-3">
+
+          {/* Search */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">Search</span>
+            <Input
+              placeholder="Job title, customer…"
+              value={filters.search ?? ''}
+              onChange={(e) => setFilters({ search: e.target.value })}
+              className="w-52"
+            />
+          </div>
+
+          <div className="hidden sm:block h-9 w-px bg-border-dark self-end" />
+
+          {/* Status */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">Status</span>
+            <Select
+              value={filters.status ?? ''}
+              onChange={(e) => setFilters({ status: e.target.value as typeof filters.status })}
+              className="w-40"
+            >
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Priority */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">Priority</span>
+            <Select
+              value={filters.priority ?? ''}
+              onChange={(e) => setFilters({ priority: e.target.value as typeof filters.priority })}
+              className="w-36"
+            >
+              <option value="">All priorities</option>
+              {PRIORITY_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="hidden sm:block h-9 w-px bg-border-dark self-end" />
+
+          {/* Date range */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">From</span>
+            <Input
+              type="date"
+              value={filters.dateFrom ?? ''}
+              onChange={(e) => setFilters({ dateFrom: e.target.value })}
+              className="w-40"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">To</span>
+            <Input
+              type="date"
+              value={filters.dateTo ?? ''}
+              onChange={(e) => setFilters({ dateTo: e.target.value })}
+              className="w-40"
+            />
+          </div>
+
+          {/* Clear */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setFilters({ search: '', status: '', priority: '', dateFrom: '', dateTo: '' })}
+              className="self-end"
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Board */}
