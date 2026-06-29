@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/Button';
@@ -20,12 +20,13 @@ const CalendarView = dynamic(
 );
 
 const STATUS_OPTIONS = [
-  { value: 'unassigned',  label: 'Unassigned' },
-  { value: 'assigned',    label: 'Assigned' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'on_hold',     label: 'On Hold' },
-  { value: 'completed',   label: 'Completed' },
-  { value: 'cancelled',   label: 'Cancelled' },
+  { value: '',            label: 'All statuses', color: null },
+  { value: 'unassigned',  label: 'Unassigned',   color: '#64748b' },
+  { value: 'assigned',    label: 'Assigned',     color: '#3b82f6' },
+  { value: 'in_progress', label: 'In Progress',  color: '#f59e0b' },
+  { value: 'on_hold',     label: 'On Hold',      color: '#8b5cf6' },
+  { value: 'completed',   label: 'Completed',    color: '#10b981' },
+  { value: 'cancelled',   label: 'Cancelled',    color: '#ef4444' },
 ];
 
 const PRIORITY_OPTIONS = [
@@ -37,10 +38,25 @@ const PRIORITY_OPTIONS = [
 
 export default function JobsPage() {
   const [tab, setTab] = useState<'kanban' | 'calendar'>('kanban');
+  const [statusOpen, setStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
   const { filters, setFilters } = useJobStore();
   const { jobs, isLoading } = useJobs(filters);
 
   const hasActiveFilters = !!(filters.search || filters.status || filters.priority || filters.dateFrom);
+
+  const selectedStatus = STATUS_OPTIONS.find((o) => o.value === (filters.status ?? ''))
+    ?? { value: '', label: 'All statuses', color: null };
+
+  useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+        setStatusOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, []);
 
   return (
     <div className="space-y-4 h-full flex flex-col">
@@ -80,18 +96,61 @@ export default function JobsPage() {
           <div className="hidden sm:block h-9 w-px bg-border-dark self-end" />
 
           {/* Status */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1" ref={statusRef}>
             <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">Status</span>
-            <Select
-              value={filters.status ?? ''}
-              onChange={(e) => setFilters({ status: e.target.value as typeof filters.status })}
-              className="w-40"
-            >
-              <option value="">All statuses</option>
-              {STATUS_OPTIONS.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </Select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setStatusOpen((v) => !v)}
+                className="w-40 flex items-center gap-2 bg-bg-primary border border-border-dark rounded-lg px-3 py-2 text-sm text-text-primary hover:border-accent-blue/50 focus:outline-none focus:ring-1 focus:ring-accent-blue transition-colors"
+              >
+                <span
+                  className="h-2 w-2 rounded-full flex-shrink-0"
+                  style={{ background: selectedStatus.color ?? '#475569' }}
+                />
+                <span className="flex-1 text-left truncate">{selectedStatus.label}</span>
+                <svg
+                  className={`h-3.5 w-3.5 text-text-secondary flex-shrink-0 transition-transform duration-150 ${statusOpen ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {statusOpen && (
+                <div className="absolute top-full left-0 mt-1.5 w-44 bg-bg-card border border-border-dark rounded-xl shadow-xl shadow-black/40 z-50 overflow-hidden">
+                  {STATUS_OPTIONS.map((opt) => {
+                    const isSelected = (filters.status ?? '') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setFilters({ status: opt.value as typeof filters.status });
+                          setStatusOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                          isSelected
+                            ? 'bg-accent-blue/10 text-text-primary'
+                            : 'text-text-secondary hover:bg-bg-primary hover:text-text-primary'
+                        }`}
+                      >
+                        <span
+                          className="h-2 w-2 rounded-full flex-shrink-0"
+                          style={{ background: opt.color ?? '#475569' }}
+                        />
+                        <span className="flex-1 text-left">{opt.label}</span>
+                        {isSelected && (
+                          <svg className="h-3.5 w-3.5 text-accent-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Priority */}
