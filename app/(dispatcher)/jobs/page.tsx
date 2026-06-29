@@ -36,6 +36,27 @@ const PRIORITY_OPTIONS = [
   { value: 'critical', label: 'Critical' },
 ];
 
+const TABS = [
+  {
+    id: 'kanban' as const,
+    label: 'Kanban',
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2zm10 0h-4a2 2 0 00-2 2v7a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'calendar' as const,
+    label: 'Calendar',
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+];
+
 export default function JobsPage() {
   const [tab, setTab] = useState<'kanban' | 'calendar'>('kanban');
   const [statusOpen, setStatusOpen] = useState(false);
@@ -63,13 +84,14 @@ export default function JobsPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-1 bg-bg-card border border-border-dark rounded-lg p-1">
-          {(['kanban', 'calendar'] as const).map((t) => (
+          {TABS.map(({ id, label, icon }) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all ${tab === t ? 'bg-accent-blue text-white' : 'text-text-secondary hover:text-text-primary'}`}
+              key={id}
+              onClick={() => setTab(id)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${tab === id ? 'bg-accent-blue text-white' : 'text-text-secondary hover:text-text-primary'}`}
             >
-              {t}
+              {icon}
+              {label}
             </button>
           ))}
         </div>
