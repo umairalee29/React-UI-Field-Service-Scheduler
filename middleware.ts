@@ -1,6 +1,9 @@
-import { auth } from '@/lib/auth';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/lib/auth.config';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req: NextRequest & { auth: { user?: { role?: string } } | null }) => {
   const { auth: session, nextUrl } = req;
@@ -34,11 +37,16 @@ export default auth((req: NextRequest & { auth: { user?: { role?: string } } | n
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
+  if (path.startsWith('/my-map') && role !== 'technician' && role !== 'admin') {
+    return NextResponse.redirect(new URL('/map', nextUrl));
+  }
+
   if (
     (path.startsWith('/dashboard') ||
       path.startsWith('/jobs') ||
       path.startsWith('/technicians') ||
-      path.startsWith('/analytics')) &&
+      path.startsWith('/analytics') ||
+      path === '/map') &&
     role === 'technician'
   ) {
     return NextResponse.redirect(new URL('/my-jobs', nextUrl));

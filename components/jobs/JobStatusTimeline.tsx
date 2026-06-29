@@ -37,7 +37,7 @@ export function JobStatusTimeline({ history }: Props) {
                 )}
               </div>
               {entry.note && (
-                <p className="text-xs text-text-secondary mb-1">"{entry.note}"</p>
+                <p className="text-xs text-text-secondary mb-1">&ldquo;{entry.note}&rdquo;</p>
               )}
               <p className="text-[10px] text-text-secondary/60">
                 {formatScheduledAt(entry.changedAt)}

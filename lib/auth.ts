@@ -1,15 +1,11 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { connectDB } from './db';
+import { authConfig } from './auth.config';
 import type { UserRole } from '@/types';
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
-  session: { strategy: 'jwt' },
-  secret: process.env['NEXTAUTH_SECRET'],
-  pages: {
-    signIn: '/login',
-    error: '/login',
-  },
+  ...authConfig,
   providers: [
     Credentials({
       name: 'credentials',
@@ -39,42 +35,4 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token['id'] = user.id;
-        token['role'] = (user as { id: string; role: UserRole }).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token['id'] as string;
-        session.user.role = token['role'] as UserRole;
-      }
-      return session;
-    },
-    async authorized({ auth: session, request: { nextUrl } }) {
-      const isLoggedIn = !!session?.user;
-      const path = nextUrl.pathname;
-
-      if (!isLoggedIn) {
-        if (path.startsWith('/api/') && !path.startsWith('/api/auth')) {
-          return false;
-        }
-        return true;
-      }
-
-      const role = session.user.role as UserRole;
-
-      if (path.startsWith('/admin') && role !== 'admin') {
-        return Response.redirect(new URL('/dashboard', nextUrl));
-      }
-      if (path.startsWith('/my-jobs') && role !== 'technician' && role !== 'admin') {
-        return Response.redirect(new URL('/dashboard', nextUrl));
-      }
-
-      return true;
-    },
-  },
 });

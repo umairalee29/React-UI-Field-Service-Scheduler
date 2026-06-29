@@ -21,7 +21,8 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', roles: ['admin', 'dispatcher'], icon: <HomeIcon /> },
   { label: 'Jobs', href: '/jobs', roles: ['admin', 'dispatcher'], icon: <BriefcaseIcon /> },
   { label: 'My Jobs', href: '/my-jobs', roles: ['technician'], icon: <BriefcaseIcon /> },
-  { label: 'Map', href: '/map', roles: ['admin', 'dispatcher', 'technician'], icon: <MapIcon /> },
+  { label: 'Map', href: '/map', roles: ['admin', 'dispatcher'], icon: <MapIcon /> },
+  { label: 'My Map', href: '/my-map', roles: ['technician'], icon: <MapIcon /> },
   { label: 'Analytics', href: '/analytics', roles: ['admin', 'dispatcher'], icon: <ChartIcon /> },
 ];
 
