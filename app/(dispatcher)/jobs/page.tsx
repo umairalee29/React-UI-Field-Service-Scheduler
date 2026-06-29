@@ -118,7 +118,8 @@ export default function JobsPage() {
               type="date"
               value={filters.dateFrom ?? ''}
               onChange={(e) => setFilters({ dateFrom: e.target.value })}
-              className="w-40"
+              onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
+              className="w-40 cursor-pointer"
             />
           </div>
 
@@ -128,7 +129,8 @@ export default function JobsPage() {
               type="date"
               value={filters.dateTo ?? ''}
               onChange={(e) => setFilters({ dateTo: e.target.value })}
-              className="w-40"
+              onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
+              className="w-40 cursor-pointer"
             />
           </div>
 
