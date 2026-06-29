@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/Input';
+import { Input } from '@/components/ui/Input';
 import { useJobs } from '@/hooks/useJobs';
 import { useJobStore } from '@/store/jobStore';
 import { SkeletonKanban } from '@/components/ui/Skeleton';
@@ -30,10 +30,11 @@ const STATUS_OPTIONS = [
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: 'low',      label: 'Low' },
-  { value: 'medium',   label: 'Medium' },
-  { value: 'high',     label: 'High' },
-  { value: 'critical', label: 'Critical' },
+  { value: '',         label: 'All priorities', color: null },
+  { value: 'low',      label: 'Low',            color: '#64748b' },
+  { value: 'medium',   label: 'Medium',         color: '#3b82f6' },
+  { value: 'high',     label: 'High',           color: '#f59e0b' },
+  { value: 'critical', label: 'Critical',       color: '#ef4444' },
 ];
 
 const TABS = [
@@ -60,7 +61,9 @@ const TABS = [
 export default function JobsPage() {
   const [tab, setTab] = useState<'kanban' | 'calendar'>('kanban');
   const [statusOpen, setStatusOpen] = useState(false);
+  const [priorityOpen, setPriorityOpen] = useState(false);
   const statusRef = useRef<HTMLDivElement>(null);
+  const priorityRef = useRef<HTMLDivElement>(null);
   const { filters, setFilters } = useJobStore();
   const { jobs, isLoading } = useJobs(filters);
 
@@ -69,10 +72,16 @@ export default function JobsPage() {
   const selectedStatus = STATUS_OPTIONS.find((o) => o.value === (filters.status ?? ''))
     ?? { value: '', label: 'All statuses', color: null };
 
+  const selectedPriority = PRIORITY_OPTIONS.find((o) => o.value === (filters.priority ?? ''))
+    ?? { value: '', label: 'All priorities', color: null };
+
   useEffect(() => {
     function onMouseDown(e: MouseEvent) {
       if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
         setStatusOpen(false);
+      }
+      if (priorityRef.current && !priorityRef.current.contains(e.target as Node)) {
+        setPriorityOpen(false);
       }
     }
     document.addEventListener('mousedown', onMouseDown);
@@ -176,18 +185,61 @@ export default function JobsPage() {
           </div>
 
           {/* Priority */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1" ref={priorityRef}>
             <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">Priority</span>
-            <Select
-              value={filters.priority ?? ''}
-              onChange={(e) => setFilters({ priority: e.target.value as typeof filters.priority })}
-              className="w-36"
-            >
-              <option value="">All priorities</option>
-              {PRIORITY_OPTIONS.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </Select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setPriorityOpen((v) => !v)}
+                className="w-36 flex items-center gap-2 bg-bg-primary border border-border-dark rounded-lg px-3 py-2 text-sm text-text-primary hover:border-accent-blue/50 focus:outline-none focus:ring-1 focus:ring-accent-blue transition-colors"
+              >
+                <span
+                  className="h-2 w-2 rounded-full flex-shrink-0"
+                  style={{ background: selectedPriority.color ?? '#475569' }}
+                />
+                <span className="flex-1 text-left truncate">{selectedPriority.label}</span>
+                <svg
+                  className={`h-3.5 w-3.5 text-text-secondary flex-shrink-0 transition-transform duration-150 ${priorityOpen ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {priorityOpen && (
+                <div className="absolute top-full left-0 mt-1.5 w-40 bg-bg-card border border-border-dark rounded-xl shadow-xl shadow-black/40 z-50 overflow-hidden">
+                  {PRIORITY_OPTIONS.map((opt) => {
+                    const isSelected = (filters.priority ?? '') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setFilters({ priority: opt.value as typeof filters.priority });
+                          setPriorityOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                          isSelected
+                            ? 'bg-accent-blue/10 text-text-primary'
+                            : 'text-text-secondary hover:bg-bg-primary hover:text-text-primary'
+                        }`}
+                      >
+                        <span
+                          className="h-2 w-2 rounded-full flex-shrink-0"
+                          style={{ background: opt.color ?? '#475569' }}
+                        />
+                        <span className="flex-1 text-left">{opt.label}</span>
+                        {isSelected && (
+                          <svg className="h-3.5 w-3.5 text-accent-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="hidden sm:block h-9 w-px bg-border-dark self-end" />
