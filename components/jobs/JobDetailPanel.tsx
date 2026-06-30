@@ -95,11 +95,23 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
                   {job?.title ?? '…'}
                 </h2>
               </div>
-              <button onClick={onClose} className="text-text-secondary hover:text-text-primary p-1 flex-shrink-0 mt-0.5">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-0.5 flex-shrink-0 mt-0.5">
+                <button
+                  onClick={() => job && router.push(`/jobs/${job._id}`)}
+                  disabled={!job}
+                  title="Open full view"
+                  className="text-text-secondary hover:text-text-primary p-1 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 3h6m0 0v6m0-6l-7 7M9 21H3m0 0v-6m0 6l7-7" />
+                  </svg>
+                </button>
+                <button onClick={onClose} className="text-text-secondary hover:text-text-primary p-1 rounded transition-colors">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {loading ? (
@@ -246,14 +258,6 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
                   ) : (
                     <p className="text-sm text-text-secondary italic">Unassigned</p>
                   )}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="mt-3"
-                    onClick={() => router.push(`/jobs/${job._id}`)}
-                  >
-                    Open full view
-                  </Button>
                 </div>
 
                 {/* Status update */}
