@@ -8,6 +8,7 @@ import { StatusBadge, PriorityBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { JobStatusTimeline } from './JobStatusTimeline';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { formatScheduledAt, formatDuration, formatAddress } from '@/lib/formatters';
 import type { IJob, IStatusHistory, IUser, JobStatus } from '@/types';
 import { useJobStore } from '@/store/jobStore';
@@ -102,7 +103,71 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
             </div>
 
             {loading ? (
-              <div className="flex-1 flex items-center justify-center text-text-secondary">Loading...</div>
+              <div className="flex-1 overflow-y-auto">
+                {/* Badges */}
+                <div className="px-6 py-3 border-b border-border-dark">
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+                </div>
+                {/* Customer */}
+                <div className="px-6 py-4 border-b border-border-dark space-y-2">
+                  <Skeleton className="h-2.5 w-16 mb-3" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-3 w-1/3" />
+                  <Skeleton className="h-3 w-2/5" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-28 mt-1" />
+                </div>
+                {/* Schedule */}
+                <div className="px-6 py-4 border-b border-border-dark space-y-2">
+                  <Skeleton className="h-2.5 w-16 mb-3" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-3 w-2/5" />
+                </div>
+                {/* Technician */}
+                <div className="px-6 py-4 border-b border-border-dark">
+                  <Skeleton className="h-2.5 w-20 mb-3" />
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-2/5" />
+                    </div>
+                  </div>
+                </div>
+                {/* Status update */}
+                <div className="px-6 py-4 border-b border-border-dark space-y-3">
+                  <Skeleton className="h-2.5 w-24" />
+                  <Skeleton className="h-9 w-full rounded-lg" />
+                  <Skeleton className="h-16 w-full rounded-lg" />
+                  <Skeleton className="h-8 w-28 rounded-lg" />
+                </div>
+                {/* History */}
+                <div className="px-6 py-4">
+                  <Skeleton className="h-2.5 w-14 mb-4" />
+                  <div className="space-y-0">
+                    {[0, 1].map((i) => (
+                      <div key={i} className="flex gap-4 pb-5">
+                        <div className="flex flex-col items-center">
+                          <Skeleton className="h-2.5 w-2.5 rounded-full mt-1 flex-shrink-0" />
+                          {i === 0 && <div className="w-px flex-1 bg-border-dark mt-1" />}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex gap-2">
+                            <Skeleton className="h-5 w-20 rounded-full" />
+                            <Skeleton className="h-5 w-24 rounded-full" />
+                          </div>
+                          <Skeleton className="h-3 w-3/4" />
+                          <Skeleton className="h-3 w-1/3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : job ? (
               <div className="flex-1 overflow-y-auto">
                 {/* Badges */}
