@@ -87,9 +87,14 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
             className="fixed right-0 top-0 h-full w-full max-w-md bg-bg-secondary border-l border-border-dark z-50 flex flex-col shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border-dark">
-              <div className="font-mono text-xs text-text-secondary">{job?.jobNumber ?? '...'}</div>
-              <button onClick={onClose} className="text-text-secondary hover:text-text-primary p-1">
+            <div className="flex items-start justify-between px-6 py-4 border-b border-border-dark gap-3">
+              <div className="min-w-0">
+                <p className="font-mono text-xs text-text-secondary mb-0.5">{job?.jobNumber ?? '…'}</p>
+                <h2 className="text-base font-semibold text-text-primary leading-snug line-clamp-2">
+                  {job?.title ?? '…'}
+                </h2>
+              </div>
+              <button onClick={onClose} className="text-text-secondary hover:text-text-primary p-1 flex-shrink-0 mt-0.5">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -100,13 +105,12 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
               <div className="flex-1 flex items-center justify-center text-text-secondary">Loading...</div>
             ) : job ? (
               <div className="flex-1 overflow-y-auto">
-                {/* Title + badges */}
-                <div className="px-6 py-4 border-b border-border-dark">
-                  <h2 className="text-lg font-semibold text-text-primary mb-2">{job.title}</h2>
+                {/* Badges */}
+                <div className="px-6 py-3 border-b border-border-dark">
                   <div className="flex flex-wrap gap-2">
                     <StatusBadge status={job.status} />
                     <PriorityBadge priority={job.priority} />
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-bg-card text-text-secondary">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-bg-card text-text-secondary capitalize">
                       {job.type}
                     </span>
                   </div>
