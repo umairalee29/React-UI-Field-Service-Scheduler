@@ -213,12 +213,12 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
                     href={`https://maps.google.com/?q=${lat},${lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 group"
+                    className="mt-1 inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border border-border-dark text-text-secondary hover:border-accent-blue hover:text-accent-blue transition-all duration-150"
                   >
-                    <svg className="h-4 w-4 text-accent-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    <span className="text-xs text-accent-blue group-hover:underline">Open in Google Maps</span>
+                    Open in Google Maps
                   </a>
                 </div>
 
