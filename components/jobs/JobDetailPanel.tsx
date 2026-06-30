@@ -7,11 +7,21 @@ import toast from 'react-hot-toast';
 import { StatusBadge, PriorityBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { Select, Textarea } from '@/components/ui/Input';
 import { JobStatusTimeline } from './JobStatusTimeline';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatScheduledAt, formatDuration, formatAddress } from '@/lib/formatters';
 import type { IJob, IStatusHistory, IUser, JobStatus } from '@/types';
 import { useJobStore } from '@/store/jobStore';
+
+const STATUS_LABELS: Record<JobStatus, string> = {
+  unassigned: 'Unassigned',
+  assigned:   'Assigned',
+  in_progress:'In Progress',
+  on_hold:    'On Hold',
+  completed:  'Completed',
+  cancelled:  'Cancelled',
+};
 
 interface Props {
   jobId: string | null;
@@ -263,22 +273,20 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
                 {/* Status update */}
                 <div className="px-6 py-4 border-b border-border-dark space-y-3">
                   <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Update Status</p>
-                  <select
+                  <Select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value as JobStatus)}
-                    className="w-full bg-bg-primary border border-border-dark rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
                   >
                     <option value="">Select new status…</option>
-                    {(['unassigned','assigned','in_progress','on_hold','completed','cancelled'] as JobStatus[]).map((s) => (
-                      <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                    {(Object.entries(STATUS_LABELS) as [JobStatus, string][]).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
                     ))}
-                  </select>
-                  <textarea
+                  </Select>
+                  <Textarea
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Optional note…"
                     rows={2}
-                    className="w-full bg-bg-primary border border-border-dark rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-1 focus:ring-accent-blue resize-none"
                   />
                   <Button
                     size="sm"
