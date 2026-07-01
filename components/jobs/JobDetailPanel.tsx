@@ -245,12 +245,27 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
                 </div>
 
                 {/* Schedule */}
-                <div className="px-6 py-4 border-b border-border-dark space-y-1">
+                <div className="px-6 py-4 border-b border-border-dark space-y-2.5">
                   <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Schedule</p>
-                  <p className="text-sm text-text-primary">{formatScheduledAt(job.scheduledAt)}</p>
-                  <p className="text-sm text-text-secondary">Estimated: {formatDuration(job.estimatedDuration)}</p>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="h-4 w-4 text-text-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm text-text-primary">{formatScheduledAt(job.scheduledAt)}</p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="h-4 w-4 text-text-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-text-secondary">Estimated: {formatDuration(job.estimatedDuration)}</p>
+                  </div>
                   {job.actualDuration && (
-                    <p className="text-sm text-text-secondary">Actual: {formatDuration(job.actualDuration)}</p>
+                    <div className="flex items-center gap-2.5">
+                      <svg className="h-4 w-4 text-accent-emerald flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm text-text-secondary">Actual: {formatDuration(job.actualDuration)}</p>
+                    </div>
                   )}
                 </div>
 
@@ -266,7 +281,7 @@ export function JobDetailPanel({ jobId, onClose }: Props) {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-text-secondary italic">Unassigned</p>
+                    <StatusBadge status="unassigned" />
                   )}
                 </div>
 
