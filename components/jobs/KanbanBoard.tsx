@@ -45,7 +45,12 @@ export function KanbanBoard({ jobs }: Props) {
     const job = jobs.find((j) => j._id === active.id);
     if (!job) return;
 
-    const targetStatus = over.id as JobStatus;
+    // over.id is either a column status string or another card's _id.
+    // When dropped onto a card, resolve to that card's column status.
+    const targetStatus: JobStatus = (COLUMNS as string[]).includes(over.id as string)
+      ? (over.id as JobStatus)
+      : (jobs.find((j) => j._id === over.id)?.status ?? job.status);
+
     if (job.status === targetStatus) return;
 
     // Optimistic update
