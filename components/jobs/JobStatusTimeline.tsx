@@ -1,7 +1,16 @@
 import { StatusBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { formatScheduledAt } from '@/lib/formatters';
-import type { IStatusHistory, IUser } from '@/types';
+import type { IStatusHistory, IUser, JobStatus } from '@/types';
+
+const STATUS_COLORS: Record<JobStatus, string> = {
+  unassigned:  '#64748b',
+  assigned:    '#3b82f6',
+  in_progress: '#f59e0b',
+  on_hold:     '#8b5cf6',
+  completed:   '#10b981',
+  cancelled:   '#ef4444',
+};
 
 interface Props {
   history: IStatusHistory[];
@@ -23,7 +32,10 @@ export function JobStatusTimeline({ history }: Props) {
         return (
           <li key={entry._id} className="flex gap-4 pb-5 last:pb-0">
             <div className="flex flex-col items-center">
-              <div className="h-2.5 w-2.5 rounded-full bg-accent-blue mt-1 flex-shrink-0" />
+              <div
+                className="h-2.5 w-2.5 rounded-full mt-1 flex-shrink-0"
+                style={{ background: STATUS_COLORS[entry.status] }}
+              />
               {!isLast && <div className="w-px flex-1 bg-border-dark mt-1" />}
             </div>
             <div className="flex-1 min-w-0 pb-1">
