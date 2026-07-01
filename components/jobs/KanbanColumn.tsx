@@ -17,7 +17,7 @@ export function KanbanColumn({ status, jobs, onJobClick }: Props) {
   const color = STATUS_COLORS[status];
 
   return (
-    <div className="flex flex-col min-w-[280px] max-w-[280px]">
+    <div className="flex flex-col min-w-[280px] max-w-[280px] h-full">
       {/* Header */}
       <div
         className="flex items-center gap-2 mb-3 px-3 py-2.5 bg-bg-card rounded-xl border border-border-dark border-t-2"
@@ -35,15 +35,15 @@ export function KanbanColumn({ status, jobs, onJobClick }: Props) {
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className={`flex-1 rounded-xl p-2 min-h-[200px] transition-colors ${
+        className={`flex-1 overflow-hidden rounded-xl p-2 transition-colors ${
           isOver ? 'bg-bg-card border-2 border-dashed' : 'bg-bg-card/40'
         }`}
         style={{ borderColor: isOver ? color : undefined }}
       >
         <SortableContext items={jobs.map((j) => j._id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 scrollbar-thin">
+          <div className="space-y-2 h-full overflow-y-auto pr-1">
             {jobs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-2 select-none">
+              <div className="h-full flex flex-col items-center justify-center gap-2 select-none">
                 <div
                   className="h-10 w-10 rounded-full flex items-center justify-center"
                   style={{ background: `${color}15` }}
