@@ -11,17 +11,9 @@ import { Select, Textarea } from '@/components/ui/Input';
 import { JobStatusTimeline } from './JobStatusTimeline';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatScheduledAt, formatDuration, formatAddress } from '@/lib/formatters';
+import { STATUS_LABELS } from '@/lib/jobConstants';
 import type { IJob, IStatusHistory, IUser, JobStatus } from '@/types';
 import { useJobStore } from '@/store/jobStore';
-
-const STATUS_LABELS: Record<JobStatus, string> = {
-  unassigned: 'Unassigned',
-  assigned:   'Assigned',
-  in_progress:'In Progress',
-  on_hold:    'On Hold',
-  completed:  'Completed',
-  cancelled:  'Cancelled',
-};
 
 interface Props {
   jobId: string | null;

@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/Input';
 import { useJobs } from '@/hooks/useJobs';
 import { useJobStore } from '@/store/jobStore';
 import { SkeletonKanban } from '@/components/ui/Skeleton';
+import {
+  JOB_STATUSES,
+  JOB_PRIORITIES,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  PRIORITY_COLORS,
+  PRIORITY_LABELS,
+} from '@/lib/jobConstants';
 
 const KanbanBoard = dynamic(
   () => import('@/components/jobs/KanbanBoard').then((m) => m.KanbanBoard),
@@ -19,22 +27,16 @@ const CalendarView = dynamic(
   { ssr: false, loading: () => <div className="h-96 flex items-center justify-center text-text-secondary">Loading calendar…</div> }
 );
 
-const STATUS_OPTIONS = [
-  { value: '',            label: 'All statuses', color: null },
-  { value: 'unassigned',  label: 'Unassigned',   color: '#64748b' },
-  { value: 'assigned',    label: 'Assigned',     color: '#3b82f6' },
-  { value: 'in_progress', label: 'In Progress',  color: '#f59e0b' },
-  { value: 'on_hold',     label: 'On Hold',      color: '#8b5cf6' },
-  { value: 'completed',   label: 'Completed',    color: '#10b981' },
-  { value: 'cancelled',   label: 'Cancelled',    color: '#ef4444' },
+type FilterOption = { value: string; label: string; color: string | null };
+
+const STATUS_OPTIONS: FilterOption[] = [
+  { value: '', label: 'All statuses', color: null },
+  ...JOB_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s], color: STATUS_COLORS[s] })),
 ];
 
-const PRIORITY_OPTIONS = [
-  { value: '',         label: 'All priorities', color: null },
-  { value: 'low',      label: 'Low',            color: '#64748b' },
-  { value: 'medium',   label: 'Medium',         color: '#3b82f6' },
-  { value: 'high',     label: 'High',           color: '#f59e0b' },
-  { value: 'critical', label: 'Critical',       color: '#ef4444' },
+const PRIORITY_OPTIONS: FilterOption[] = [
+  { value: '', label: 'All priorities', color: null },
+  ...JOB_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p], color: PRIORITY_COLORS[p] })),
 ];
 
 const TABS = [

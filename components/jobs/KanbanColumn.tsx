@@ -3,34 +3,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { JobCard } from './JobCard';
+import { STATUS_COLORS, STATUS_LABELS, EMPTY_MESSAGES } from '@/lib/jobConstants';
 import type { IJob, JobStatus } from '@/types';
-
-const STATUS_COLORS: Record<JobStatus, string> = {
-  unassigned: '#64748b',
-  assigned: '#3b82f6',
-  in_progress: '#f59e0b',
-  on_hold: '#8b5cf6',
-  completed: '#10b981',
-  cancelled: '#ef4444',
-};
-
-const STATUS_LABELS: Record<JobStatus, string> = {
-  unassigned: 'Unassigned',
-  assigned: 'Assigned',
-  in_progress: 'In Progress',
-  on_hold: 'On Hold',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
-
-const EMPTY_MESSAGES: Record<JobStatus, string> = {
-  unassigned: 'No unassigned jobs',
-  assigned:   'No assigned jobs',
-  in_progress:'Nothing in progress',
-  on_hold:    'Nothing on hold',
-  completed:  'No completed jobs',
-  cancelled:  'No cancelled jobs',
-};
 
 interface Props {
   status: JobStatus;

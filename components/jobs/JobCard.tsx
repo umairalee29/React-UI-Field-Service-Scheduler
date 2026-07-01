@@ -5,22 +5,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { PriorityBadge, StatusBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { formatScheduledAt, formatDuration } from '@/lib/formatters';
+import { PRIORITY_COLORS, JOB_TYPE_STYLES } from '@/lib/jobConstants';
 import type { IJob, IUser } from '@/types';
-
-const PRIORITY_HEX: Record<string, string> = {
-  low: '#64748b',
-  medium: '#3b82f6',
-  high: '#f59e0b',
-  critical: '#ef4444',
-};
-
-const TYPE_STYLE: Record<string, string> = {
-  installation: 'bg-bg-card text-text-secondary',
-  maintenance:  'bg-bg-card text-text-secondary',
-  repair:       'bg-bg-card text-text-secondary',
-  inspection:   'bg-bg-card text-text-secondary',
-  emergency:    'bg-accent-red/10 text-accent-red',
-};
 
 interface Props {
   job: IJob;
@@ -41,7 +27,7 @@ export function JobCard({ job, onClick }: Props) {
     ? (job.technicianId as IUser)
     : null;
 
-  const priorityColor = PRIORITY_HEX[job.priority] ?? '#64748b';
+  const priorityColor = PRIORITY_COLORS[job.priority] ?? '#64748b';
 
   return (
     <div
@@ -64,7 +50,7 @@ export function JobCard({ job, onClick }: Props) {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="font-mono text-[10px] text-text-secondary">{job.jobNumber}</p>
-              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded capitalize ${TYPE_STYLE[job.type] ?? 'bg-bg-card text-text-secondary'}`}>
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded capitalize ${JOB_TYPE_STYLES[job.type] ?? 'bg-bg-card text-text-secondary'}`}>
                 {job.type}
               </span>
             </div>

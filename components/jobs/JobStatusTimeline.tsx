@@ -1,16 +1,8 @@
 import { StatusBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { formatScheduledAt } from '@/lib/formatters';
-import type { IStatusHistory, IUser, JobStatus } from '@/types';
-
-const STATUS_COLORS: Record<JobStatus, string> = {
-  unassigned:  '#64748b',
-  assigned:    '#3b82f6',
-  in_progress: '#f59e0b',
-  on_hold:     '#8b5cf6',
-  completed:   '#10b981',
-  cancelled:   '#ef4444',
-};
+import { STATUS_COLORS } from '@/lib/jobConstants';
+import type { IStatusHistory, IUser } from '@/types';
 
 interface Props {
   history: IStatusHistory[];

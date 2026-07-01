@@ -6,16 +6,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useState } from 'react';
 import { JobDetailPanel } from './JobDetailPanel';
-import type { IJob, JobStatus } from '@/types';
-
-const STATUS_COLORS: Record<JobStatus, string> = {
-  unassigned: '#64748b',
-  assigned: '#3b82f6',
-  in_progress: '#f59e0b',
-  on_hold: '#8b5cf6',
-  completed: '#10b981',
-  cancelled: '#ef4444',
-};
+import { STATUS_COLORS } from '@/lib/jobConstants';
+import type { IJob } from '@/types';
 
 interface Props {
   jobs: IJob[];
