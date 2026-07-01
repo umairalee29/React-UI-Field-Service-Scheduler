@@ -37,6 +37,51 @@ export function SkeletonRow() {
   );
 }
 
+export function SkeletonCalendar() {
+  return (
+    <div className="bg-bg-card rounded-xl p-4 border border-border-dark space-y-3">
+      {/* Toolbar: nav buttons left, title centre, view switcher right */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <Skeleton className="h-7 w-8 rounded-md" />
+          <Skeleton className="h-7 w-8 rounded-md" />
+          <Skeleton className="h-7 w-14 rounded-md" />
+        </div>
+        <Skeleton className="h-5 w-36" />
+        <div className="flex gap-2">
+          <Skeleton className="h-7 w-12 rounded-md" />
+          <Skeleton className="h-7 w-16 rounded-md" />
+          <Skeleton className="h-7 w-16 rounded-md" />
+        </div>
+      </div>
+
+      {/* Day-header row */}
+      <div className="grid grid-cols-8 gap-px">
+        <div />
+        {Array.from({ length: 7 }).map((_, i) => (
+          <Skeleton key={i} className="h-8 rounded-md" />
+        ))}
+      </div>
+
+      {/* Hour slots */}
+      <div className="space-y-0">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="grid grid-cols-8 gap-px">
+            <Skeleton className="h-10 w-10 rounded" />
+            {Array.from({ length: 7 }).map((_, j) => (
+              <div
+                key={j}
+                className="h-10 border-t border-border-dark"
+                style={{ opacity: i === 0 ? 1 : undefined }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SkeletonKanban() {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">

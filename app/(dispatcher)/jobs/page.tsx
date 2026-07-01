@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useJobs } from '@/hooks/useJobs';
 import { useJobStore } from '@/store/jobStore';
-import { SkeletonKanban } from '@/components/ui/Skeleton';
+import { SkeletonKanban, SkeletonCalendar } from '@/components/ui/Skeleton';
 import {
   JOB_STATUSES,
   JOB_PRIORITIES,
@@ -24,7 +24,7 @@ const KanbanBoard = dynamic(
 
 const CalendarView = dynamic(
   () => import('@/components/jobs/CalendarView').then((m) => m.CalendarView),
-  { ssr: false, loading: () => <div className="h-96 flex items-center justify-center text-text-secondary">Loading calendar…</div> }
+  { ssr: false, loading: () => <SkeletonCalendar /> }
 );
 
 type FilterOption = { value: string; label: string; color: string | null };
