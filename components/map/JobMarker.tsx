@@ -2,9 +2,8 @@
 
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { StatusBadge, PriorityBadge } from '@/components/ui/Badge';
 import { formatScheduledAt } from '@/lib/formatters';
-import { STATUS_COLORS } from '@/lib/jobConstants';
+import { STATUS_COLORS, STATUS_LABELS } from '@/lib/jobConstants';
 import type { IJob, JobStatus } from '@/types';
 
 function createJobIcon(status: JobStatus): L.DivIcon {
@@ -46,17 +45,24 @@ export function JobMarker({ job, onClick }: JobMarkerProps) {
     >
       <Popup className="custom-popup">
         <div className="min-w-[200px] space-y-2">
-          <div className="font-mono text-xs text-gray-500">{job.jobNumber}</div>
-          <div className="font-semibold text-sm">{job.title}</div>
-          <div className="text-xs text-gray-600">{job.customer.name}</div>
-          <div className="text-xs text-gray-500">{job.customer.address.street}, {job.customer.address.city}</div>
-          <div className="flex gap-1 flex-wrap">
-            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium`} style={{ background: `${STATUS_COLORS[job.status]}25`, color: STATUS_COLORS[job.status] }}>
-              {job.status.replace(/_/g, ' ')}
-            </span>
-          </div>
-          {techName && <div className="text-xs text-gray-600">👷 {techName}</div>}
-          <div className="text-xs text-gray-500">{formatScheduledAt(job.scheduledAt)}</div>
+          <p className="font-mono text-[10px] text-text-secondary">{job.jobNumber}</p>
+          <p className="font-semibold text-sm text-text-primary leading-snug">{job.title}</p>
+          <p className="text-xs text-text-secondary">{job.customer.name}</p>
+          <p className="text-xs text-text-secondary">
+            {job.customer.address.street}, {job.customer.address.city}
+          </p>
+          <span
+            className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+            style={{ background: `${STATUS_COLORS[job.status]}25`, color: STATUS_COLORS[job.status] }}
+          >
+            {STATUS_LABELS[job.status]}
+          </span>
+          {techName && (
+            <p className="text-xs text-text-secondary">
+              Technician: <span className="text-text-primary font-medium">{techName}</span>
+            </p>
+          )}
+          <p className="text-[10px] text-text-secondary">{formatScheduledAt(job.scheduledAt)}</p>
         </div>
       </Popup>
     </Marker>

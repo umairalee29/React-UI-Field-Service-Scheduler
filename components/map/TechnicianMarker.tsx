@@ -41,17 +41,28 @@ export function TechnicianMarker({ technician, position }: TechnicianMarkerProps
       icon={createTechIcon(technician.name)}
     >
       <Popup>
-        <div className="min-w-[160px] space-y-1">
-          <div className="font-semibold text-sm">{technician.name}</div>
-          <div className="text-xs text-gray-500">{technician.phone}</div>
-          <div className="text-xs text-gray-600">Active jobs: {technician.activeJobCount}</div>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {technician.skills.slice(0, 3).map((s) => (
-              <span key={s} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded">
-                {s}
-              </span>
-            ))}
-          </div>
+        <div className="min-w-[160px] space-y-1.5">
+          <p className="font-semibold text-sm text-text-primary">{technician.name}</p>
+          {technician.phone && (
+            <p className="text-xs text-text-secondary">{technician.phone}</p>
+          )}
+          <p className="text-xs text-text-secondary">
+            Active jobs:{' '}
+            <span className="text-text-primary font-medium">{technician.activeJobCount}</span>
+          </p>
+          {technician.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-0.5">
+              {technician.skills.slice(0, 3).map((s) => (
+                <span
+                  key={s}
+                  className="px-1.5 py-0.5 text-[10px] rounded font-medium"
+                  style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </Popup>
     </Marker>
