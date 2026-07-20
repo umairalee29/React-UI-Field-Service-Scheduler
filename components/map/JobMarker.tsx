@@ -4,19 +4,11 @@ import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { StatusBadge, PriorityBadge } from '@/components/ui/Badge';
 import { formatScheduledAt } from '@/lib/formatters';
+import { STATUS_COLORS } from '@/lib/jobConstants';
 import type { IJob, JobStatus } from '@/types';
 
-const STATUS_HEX: Record<JobStatus, string> = {
-  unassigned: '#64748b',
-  assigned: '#3b82f6',
-  in_progress: '#f59e0b',
-  on_hold: '#8b5cf6',
-  completed: '#10b981',
-  cancelled: '#ef4444',
-};
-
 function createJobIcon(status: JobStatus): L.DivIcon {
-  const color = STATUS_HEX[status];
+  const color = STATUS_COLORS[status];
   return L.divIcon({
     className: '',
     html: `
@@ -59,7 +51,7 @@ export function JobMarker({ job, onClick }: JobMarkerProps) {
           <div className="text-xs text-gray-600">{job.customer.name}</div>
           <div className="text-xs text-gray-500">{job.customer.address.street}, {job.customer.address.city}</div>
           <div className="flex gap-1 flex-wrap">
-            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium`} style={{ background: `${STATUS_HEX[job.status]}25`, color: STATUS_HEX[job.status] }}>
+            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium`} style={{ background: `${STATUS_COLORS[job.status]}25`, color: STATUS_COLORS[job.status] }}>
               {job.status.replace(/_/g, ' ')}
             </span>
           </div>
