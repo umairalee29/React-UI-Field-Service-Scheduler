@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { StatusBadge } from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { JOB_STATUSES, STATUS_COLORS, STATUS_LABELS } from '@/lib/jobConstants';
 import type { IJob, TechnicianWithMeta } from '@/types';
 import { useMapStore } from '@/store/mapStore';
@@ -22,6 +23,7 @@ const DispatchMap = dynamic(
 export default function MapPage() {
   const [jobs, setJobs] = useState<IJob[]>([]);
   const [technicians, setTechnicians] = useState<TechnicianWithMeta[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
   const [statusOpen, setStatusOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -45,7 +47,7 @@ export default function MapPage() {
     ]).then(([jobsData, techData]) => {
       if (jobsData.success) setJobs(jobsData.data.jobs);
       if (techData.success) setTechnicians(techData.data);
-    });
+    }).finally(() => setLoading(false));
   }, []);
 
   const filteredJobs = statusFilter ? jobs.filter((j) => j.status === statusFilter) : jobs;
@@ -109,21 +111,43 @@ export default function MapPage() {
               )}
             </div>
           </div>
+          {/* Job count */}
+          <div className="px-3 py-1.5 border-b border-border-dark">
+            <p className="text-[10px] text-text-secondary">
+              {loading ? '—' : statusFilter
+                ? `${filteredJobs.length} of ${jobs.length} jobs`
+                : `${jobs.length} jobs`}
+            </p>
+          </div>
+
           <div className="flex-1 overflow-y-auto">
-            {filteredJobs.map((job) => (
-              <div
-                key={job._id}
-                onClick={() => setSelectedJobId(job._id)}
-                className="flex items-start gap-2 px-3 py-2.5 border-b border-border-dark hover:bg-bg-primary cursor-pointer transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-mono text-text-secondary">{job.jobNumber}</p>
-                  <p className="text-xs font-medium text-text-primary truncate">{job.title}</p>
-                  <p className="text-[10px] text-text-secondary">{job.customer.name}</p>
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-2 px-3 py-2.5 border-b border-border-dark">
+                  <div className="flex-1 space-y-1.5 min-w-0">
+                    <Skeleton className="h-2.5 w-14" />
+                    <Skeleton className="h-3 w-3/4" />
+                    <Skeleton className="h-2.5 w-1/2" />
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full flex-shrink-0" />
                 </div>
-                <StatusBadge status={job.status} />
-              </div>
-            ))}
+              ))
+            ) : (
+              filteredJobs.map((job) => (
+                <div
+                  key={job._id}
+                  onClick={() => setSelectedJobId(job._id)}
+                  className="flex items-start gap-2 px-3 py-2.5 border-b border-border-dark hover:bg-bg-primary cursor-pointer transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-mono text-text-secondary">{job.jobNumber}</p>
+                    <p className="text-xs font-medium text-text-primary truncate">{job.title}</p>
+                    <p className="text-[10px] text-text-secondary">{job.customer.name}</p>
+                  </div>
+                  <StatusBadge status={job.status} />
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -131,10 +155,15 @@ export default function MapPage() {
       {/* Toggle */}
       <button
         onClick={() => setSidebarOpen((v) => !v)}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-bg-card border border-border-dark rounded-r-lg p-1.5 text-text-secondary hover:text-text-primary transition-colors"
+        className="absolute top-1/2 -translate-y-1/2 z-10 bg-bg-card border border-border-dark rounded-r-lg p-1.5 text-text-secondary hover:text-text-primary transition-colors"
         style={{ left: sidebarOpen ? '256px' : '0' }}
       >
-        {sidebarOpen ? '◀' : '▶'}
+        <svg
+          className={`h-3.5 w-3.5 transition-transform duration-200 ${sidebarOpen ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
       </button>
 
       {/* Map */}
